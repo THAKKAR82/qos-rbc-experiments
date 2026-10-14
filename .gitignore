@@ -1,0 +1,14 @@
+reference/quantum-oracle-sketching/
+
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+reference/quantum-oracle-sketching/
+
+validation/
+
+data/*
+!data/.gitkeep

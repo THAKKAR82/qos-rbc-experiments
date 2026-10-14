@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "atol": 1e-08,
+  "rtol": 0,
+  "shape": [
+    45211,
+    51
+  ],
+  "max_row_sparsity": 16,
+  "nnz": 723376,
+  "qos_size": 41,
+  "baseline_values": {
+    "paper_accuracy": 0.8995155858234207,
+    "paper_balanced_accuracy": 0.6300640934600773,
+    "balanced_accuracy": 0.8256193229214974,
+    "jl_endpoint_accuracy": 0.899537704823642,
+    "jl_endpoint_balanced_accuracy": 0.8256067994399695
+  },
+  "csv_comparisons": [
+    {
+      "file": "bank_bucket_sweep_raw.csv",
+      "rows": 40,
+      "max_absolute_difference": 0.0
+    },
+    {
+      "file": "bank_bucket_sweep_summary.csv",
+      "rows": 8,
+      "max_absolute_difference": 0.0
+    },
+    {
+      "file": "bank_sparse_jl_sweep_raw.csv",
+      "rows": 40,
+      "max_absolute_difference": 0.0
+    },
+    {
+      "file": "bank_sparse_jl_sweep_summary.csv",
+      "rows": 8,
+      "max_absolute_difference": 0.0
+    },
+    {
+      "file": "bank_bucket_vs_jl_comparison.csv",
+      "rows": 8,
+      "max_absolute_difference": 0.0
+    }
+  ],
+  "sweep_seconds": {
+    "bucket": 6.170235958066769,
+    "sparse_jl": 14.769440582953393
+  },
+  "dense_encoded_array_bytes": 18446088
+}

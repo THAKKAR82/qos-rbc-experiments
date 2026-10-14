@@ -1,0 +1,72 @@
+[
+  {
+    "file": "bank_bucket_vs_sparse_jl.png",
+    "original_shape": [
+      1468,
+      2070,
+      4
+    ],
+    "new_shape": [
+      1468,
+      2070,
+      4
+    ],
+    "pixel_identical": true
+  },
+  {
+    "file": "bank_bucket_vs_sparse_jl_balanced.png",
+    "original_shape": [
+      1468,
+      2070,
+      4
+    ],
+    "new_shape": [
+      1468,
+      2070,
+      4
+    ],
+    "pixel_identical": true
+  },
+  {
+    "file": "bank_machine_size_vs_accuracy.png",
+    "original_shape": [
+      1407,
+      1890,
+      4
+    ],
+    "new_shape": [
+      1407,
+      1890,
+      4
+    ],
+    "pixel_identical": true
+  },
+  {
+    "file": "bank_machine_size_vs_accuracy_both_sketches.png",
+    "original_shape": [
+      1468,
+      2363,
+      4
+    ],
+    "new_shape": [
+      1468,
+      2363,
+      4
+    ],
+    "pixel_identical": true
+  },
+  {
+    "file": "bank_machine_size_vs_balanced_accuracy_both_sketches.png",
+    "original_shape": [
+      1468,
+      2368,
+      4
+    ],
+    "new_shape": [
+      1468,
+      2368,
+      4
+    ],
+    "pixel_identical": true
+  }
+]
