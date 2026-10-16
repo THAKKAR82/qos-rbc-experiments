@@ -251,6 +251,50 @@ def qos_costs(N: int, D: int, s: int, kappa: float, gamma: float,
     return out
 
 
+F61_FACTORS = ("s^7", "kappa^4", "gamma^-4", "delta^-1", "min_term")
+
+
+def f61_decomposition(inputs: dict) -> dict:
+    """log10 of each F61 factor of M/(RN), their sum, and an s = 1 counterfactual.
+
+    `inputs` is qos_costs(...)["inputs"]. min_term is min{s^2 log^2 D, log^2 m}
+    (log2, log m floored at 1 bit, as in qos_costs). The s = 1 total keeps every
+    other measured factor: it is the floor set by kappa, gamma, delta and m.
+    Pure arithmetic: same prefactor caveats as qos_costs.
+    """
+    s, D, m = int(inputs["s"]), int(inputs["D"]), int(inputs["m"])
+    kappa, gamma, delta = float(inputs["kappa_reg"]), float(inputs["gamma_test"]), float(inputs["delta"])
+    if not (gamma > 0 and math.isfinite(gamma)) or s < 1:
+        raise ValueError("F61 is undefined for gamma <= 0 or s < 1")
+    lD2, lm2 = math.log2(D) ** 2, math.log2(max(m, 2)) ** 2
+    def min_term(sparsity):
+        return min(sparsity**2 * lD2, lm2)
+    out = {"log10_s^7": 7 * math.log10(s), "log10_kappa^4": 4 * math.log10(kappa),
+           "log10_gamma^-4": -4 * math.log10(gamma), "log10_delta^-1": -math.log10(delta),
+           "log10_min_term": math.log10(min_term(s)),
+           "min_term_branch": "s^2 log2^2 D" if s**2 * lD2 < lm2 else "log2^2 m"}
+    out["log10_total"] = sum(out[f"log10_{f}"] for f in F61_FACTORS)
+    out["log10_total_s1"] = out["log10_total"] - out["log10_s^7"] - out["log10_min_term"] + math.log10(min_term(1))
+    return out
+
+
+def derive_f61_decomposition(output_dir, gamma_label: str = "p10"):
+    """Decomposition table for every task and alpha, read from saved task JSON only."""
+    import pandas as pd
+    out = Path(output_dir)
+    manifest = json.loads((out / "manifest.json").read_text())
+    rows = []
+    for task_id in manifest["tasks"]:
+        result = json.loads((out / f"{task_id}.json").read_text())
+        for r in result["alpha_sweep"]:
+            inputs = r[f"costs_gamma_{gamma_label}"]["inputs"]
+            rows.append(dict(task_id=task_id, kind=result["task"]["kind"], alpha=r["alpha"],
+                             gamma_label=gamma_label, gamma=inputs["gamma_test"], s=inputs["s"],
+                             kappa_reg=inputs["kappa_reg"], D=inputs["D"], m=inputs["m"],
+                             delta=inputs["delta"], **f61_decomposition(inputs)))
+    return pd.DataFrame(rows)
+
+
 # ---------------------------------------------------------------- one binary task
 def _check_labels(*labels):
     for y in labels:
@@ -518,3 +562,25 @@ def run_step1(output_dir, *, alphas=ALPHAS, delta=DELTA, thresholds=MARGIN_THRES
                                       if p.name != "manifest.json"})
     write_json(out / "manifest.json", _clean(manifest))
     return out, run_id
+
+
+def write_derived_manifest(output_dir, paths, *, name="derived_manifest.json"):
+    """Hash post-run artifacts (figures, derived tables) without touching manifest.json.
+
+    Written once; later calls only verify, and raise on any hash drift.
+    """
+    out = Path(output_dir)
+    source = out / "manifest.json"
+    hashes = {p: _sha256(out / p) for p in sorted(paths)}
+    target = out / name
+    if target.exists():
+        recorded = json.loads(target.read_text())
+        if recorded["artifacts_sha256"] != hashes:
+            raise ValueError(f"Derived artifact drift in {out}; do not overwrite {name}")
+        return recorded
+    data = dict(source_run_id=json.loads(source.read_text()).get("run_id"),
+                source_manifest_sha256=_sha256(source), interpretation=INTERPRETATION,
+                note="Post-run figures and derived tables; pure functions of the task JSONs",
+                artifacts_sha256=hashes)
+    target.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+    return data

@@ -1,0 +1,14 @@
+{
+  "artifacts_sha256": {
+    "derived/f61_decomposition_gamma_p10.csv": "983b8380c5468593114e47041fd9e0b1ec6a8353a40ff0e1ab03a180af024c44",
+    "figures/df_rank_frequency.png": "6d0cd15a6a799ea4e8aa9863dc3dcab22412548a36ef7de7e04f62064adc3fdd",
+    "figures/f61_decomposition_alpha10.png": "054b1590be852c767a80e51b2e89f810ded8f78d0a140cc105318b0214abc59f",
+    "figures/kappa_vs_alpha_vs_val_accuracy.png": "e96f1da1c03f316b89a6e0b1fb633b4bc0e42b297423fdb04c5dc1ee49dcb96e",
+    "figures/margin_cdf.png": "c80dd73cd0195949472df0f1547f1bb8d1bca75b483173d25fd0f0ed20d001ea",
+    "figures/max_df_sweep.png": "768614ac6e03a34ba1edaecbba2da04a262a315be3fe4030b1c22b9e4e17d214"
+  },
+  "interpretation": "calculated / theoretical accounting",
+  "note": "Post-run figures and derived tables; pure functions of the task JSONs",
+  "source_manifest_sha256": "b90006becc25e448b6ce3feac940b51b47465dda6992163f4900cc6d918cc684",
+  "source_run_id": "20261016T161637Z-e70ae078"
+}

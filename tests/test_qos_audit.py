@@ -1,4 +1,6 @@
 """QOS applicability audit helpers: theorem conventions, not sklearn defaults."""
+import hashlib
+import json
 import math
 
 import numpy as np
@@ -210,3 +212,60 @@ def test_audit_binary_end_to_end_small():
         assert row['kappa_reg'] == pytest.approx(qa.kappa_reg(row['lam']))
         assert row['costs_gamma_min']['A9_qubits_single_prediction'] == qos_svm_machine_size(
             out['N_nonzero'], out['D_nonzero'], out['sparsity']['s_row_or_col'])
+
+
+# ---------------------------------------------------------------- F61 decomposition
+def test_f61_decomposition_sums_to_reported_passes():
+    for N, D, s, k, g, m, delta in [(100, 1024, 4, 3., .1, 256, .1),
+                                    (8472, 47138, 5714, 5.42, .0556, 3792, .1),
+                                    (10, 64, 2, 1.5, .3, 2, .05)]:
+        inputs = qa.qos_costs(N, D, s, k, g, m=m, delta=delta)
+        d = qa.f61_decomposition(inputs['inputs'])
+        parts = [d[f'log10_{f}'] for f in qa.F61_FACTORS]
+        assert d['log10_total'] == pytest.approx(sum(parts), abs=1e-12)
+        assert d['log10_total'] == pytest.approx(inputs['log10_F61_passes'], abs=1e-9)
+
+
+def test_f61_decomposition_factors_and_s1_counterfactual():
+    d = qa.f61_decomposition(dict(N=100, D=1024, s=4, kappa_reg=3., gamma_test=.1, m=256, delta=.1))
+    assert d['log10_s^7'] == pytest.approx(7 * math.log10(4))
+    assert d['log10_kappa^4'] == pytest.approx(4 * math.log10(3))
+    assert d['log10_gamma^-4'] == pytest.approx(4.)
+    assert d['log10_delta^-1'] == pytest.approx(1.)
+    assert d['log10_min_term'] == pytest.approx(math.log10(min(16 * 100, 64)))  # log2 D=10, log2 m=8
+    # s = 1: s^7 vanishes and the min term becomes min{log^2 D, log^2 m}.
+    assert d['log10_total_s1'] == pytest.approx(4 * math.log10(3) + 4 + 1 + math.log10(64))
+    assert d['min_term_branch'] == 'log2^2 m'
+    with pytest.raises(ValueError):
+        qa.f61_decomposition(dict(N=1, D=4, s=1, kappa_reg=1., gamma_test=0., m=2, delta=.1))
+
+
+def test_derive_f61_decomposition_reads_json_only(tmp_path):
+    def task(task_id, alphas):
+        sweep = []
+        for a in alphas:
+            costs = qa.qos_costs(50, 300, 7, 2. + a, .05, m=40)
+            sweep.append({'alpha': a, 'costs_gamma_p10': costs})
+        return {'task': {'task_id': task_id, 'kind': 'pair'}, 'alpha_sweep': sweep}
+    for t in ('a__vs__b', 'c__vs__rest'):
+        (tmp_path / f'{t}.json').write_text(json.dumps(task(t, [1., 10.])))
+    (tmp_path / 'manifest.json').write_text(json.dumps({'tasks': ['a__vs__b', 'c__vs__rest']}))
+    table = qa.derive_f61_decomposition(tmp_path)
+    assert len(table) == 4 and set(table['task_id']) == {'a__vs__b', 'c__vs__rest'}
+    row = table[(table.task_id == 'a__vs__b') & (table.alpha == 10.)].iloc[0]
+    assert row['log10_total'] == pytest.approx(qa.qos_costs(50, 300, 7, 12., .05, m=40)['log10_F61_passes'])
+    assert row['gamma'] == .05 and row['s'] == 7
+
+
+def test_write_derived_manifest_is_immutable(tmp_path):
+    (tmp_path / 'manifest.json').write_text(json.dumps({'run_id': 'r1'}))
+    (tmp_path / 'figures').mkdir()
+    fig = tmp_path / 'figures' / 'f.png'
+    fig.write_bytes(b'abc')
+    first = qa.write_derived_manifest(tmp_path, ['figures/f.png'])
+    assert first['artifacts_sha256']['figures/f.png'] == hashlib.sha256(b'abc').hexdigest()
+    assert first['source_run_id'] == 'r1'
+    assert qa.write_derived_manifest(tmp_path, ['figures/f.png']) == first  # Verified, unchanged.
+    fig.write_bytes(b'abd')
+    with pytest.raises(ValueError):
+        qa.write_derived_manifest(tmp_path, ['figures/f.png'])
