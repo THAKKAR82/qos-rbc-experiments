@@ -1,5 +1,5 @@
 {
   "kernel_peak_rss_bytes": 570441728,
-  "python_executable": "/Users/Surface/code/qos-rbc-experiments/.venv/bin/python",
+  "python_executable": ".venv/bin/python",
   "total_notebook_execution_seconds": 41.26979229203425
 }
