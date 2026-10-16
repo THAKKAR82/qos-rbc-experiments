@@ -1,0 +1,9 @@
+{
+  "artifacts_sha256": {
+    "derived/f61_decomposition_gamma_p10.csv": "45b5ee1b9f1aef50048bba50d130463a43d1a3689f2d973ec97bddec77554d89"
+  },
+  "interpretation": "calculated / theoretical accounting",
+  "note": "Post-run figures and derived tables; pure functions of the task JSONs",
+  "source_manifest_sha256": "ac7fe1f097a80bcdc51485ccfa908e7d23d4f6264834e29b605603b635fbcdc8",
+  "source_run_id": "20261016T175910Z-a543a93d"
+}

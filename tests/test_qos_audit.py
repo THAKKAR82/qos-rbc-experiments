@@ -269,3 +269,97 @@ def test_write_derived_manifest_is_immutable(tmp_path):
     fig.write_bytes(b'abd')
     with pytest.raises(ValueError):
         qa.write_derived_manifest(tmp_path, ['figures/f.png'])
+
+
+# ---------------------------------------------------------------- D <= N (rank-checked sigma_min)
+def one_hot_with_numeric(n=300, groups=(3, 4, 2), seed=42):
+    rng = np.random.default_rng(seed)
+    blocks = [np.eye(g)[rng.integers(0, g, n)] for g in groups]  # each block sums to ones
+    return np.hstack(blocks + [rng.standard_normal((n, 2))])
+
+
+def test_svd_sigma_min_full_rank_tall():
+    X = np.random.default_rng(42).standard_normal((200, 12))
+    info = qa.svd_sigma_min(X)
+    sv = np.linalg.svd(X, compute_uv=False)
+    assert info['rank'] == 12 == np.linalg.matrix_rank(X)
+    assert info['sigma_min'] == pytest.approx(sv[-1]) == info['sigma_min_raw']
+    assert info['sigma_max'] == pytest.approx(sv[0])
+    assert info['tol'] == pytest.approx(sv[0] * max(X.shape) * np.finfo(np.float64).eps)
+
+
+def test_svd_sigma_min_rank_deficient_one_hot():
+    X = one_hot_with_numeric()
+    info = qa.svd_sigma_min(sparse.csr_matrix(X))
+    D = X.shape[1]
+    assert info['rank'] == D - 2 == np.linalg.matrix_rank(X)  # three groups: two dependencies
+    assert info['sigma_min'] == 0.0
+    assert 0 <= info['sigma_min_raw'] <= info['tol'] < info['smallest_nonzero']
+    with pytest.raises(ValueError):
+        qa.svd_sigma_min(sparse.random(10, qa.DENSE_SVD_MAX_D + 1, density=.01, format='csr'))
+
+
+def test_audit_binary_D_below_N_full_rank_uses_svd_sigma_min():
+    rng = np.random.default_rng(42)
+    X = rng.standard_normal((120, 6)); y = np.where(X @ rng.standard_normal(6) > 0, 1, -1)
+    Xt = rng.standard_normal((40, 6)); yt = np.where(Xt[:, 0] > 0, 1, -1)
+    out = qa.audit_binary(X, y, None, None, Xt, yt, alphas=(1.,))
+    sv = np.linalg.svd(X, compute_uv=False)
+    assert out['sigma_min_scaled'] == pytest.approx(sv[-1] / sv[0], rel=1e-8)
+    assert out['sigma_min_source'] == 'dense_svd_rank_check'
+    row = out['alpha_sweep'][0]
+    Xs = X / sv[0]
+    A = np.vstack([Xs, math.sqrt(row['lam']) * np.eye(6)])
+    s = np.linalg.svd(A, compute_uv=False)
+    assert row['kappa_reg'] == pytest.approx(s.max() / s.min(), rel=1e-8)
+    assert row['validation'] is None and row['test']['accuracy'] >= 0
+
+
+def test_audit_binary_D_below_N_rank_deficient_kappa():
+    X = one_hot_with_numeric(n=200)
+    rng = np.random.default_rng(1)
+    y = np.where(rng.random(200) < .4, 1, -1)
+    out = qa.audit_binary(X, y, None, None, X[:50], y[:50], alphas=(10.,))
+    assert out['svd']['rank'] == X.shape[1] - 2 and out['sigma_min_scaled'] == 0.0
+    row = out['alpha_sweep'][0]
+    assert row['kappa_reg'] == pytest.approx(math.sqrt((1 + row['lam']) / row['lam']))
+    assert out['sparsity']['s_row_or_col'] == 200  # dense numeric columns: s = N
+
+
+def test_audit_binary_D_above_N_path_unchanged():
+    X, y = random_sparse(n=30, d=200, density=.1)
+    out = qa.audit_binary(X, y, X, y, X, y, alphas=(1.,))
+    assert out['sigma_min_source'] == 'shape_D_gt_N' and out['svd'] is None
+    assert out['sigma_min_scaled'] == 0.0
+
+
+def test_analytic_dense_column_s7():
+    row = qa.analytic_dense_column_row('PaySim', 6_362_620)
+    assert row['s_row_or_col'] == 6_362_620 and row['s_over_N'] == 1.0
+    assert row['log10_s^7'] == pytest.approx(7 * math.log10(6_362_620)) == pytest.approx(47.63, abs=.01)
+    assert row['status'].startswith('analytic, not measured')
+
+
+def test_family_summary_selected_and_cost_min_alpha():
+    import pandas as pd
+    summary = pd.DataFrame(dict(task_id=['a', 'a', 'b', 'b'], alpha=[1., 10.] * 2, N_nonzero=[10] * 4,
+                                s_row_only=[3] * 4, s_row_or_col=[8, 8, 6, 6], kappa_reg=[5., 2., 6., 3.],
+                                gamma_p10=[.1, .2, .05, .3], val_accuracy=[.9, .8, .7, .7],
+                                test_accuracy=[.6, .5, .9, .8]))
+    decomposition = pd.DataFrame(dict(task_id=['a', 'a', 'b', 'b'], alpha=[1., 10.] * 2,
+                                      log10_total=[30., 25., 28., 29.], log10_total_s1=[9., 7., 8., 10.]))
+    row = qa.family_summary(summary, decomposition, dataset='X', family='f', status='measured',
+                            select_by='val_accuracy')
+    assert row['n_tasks'] == 2 and row['s_over_N_max'] == .8 and row['kappa_reg_min'] == 2.
+    # Per-task selection: a -> alpha 1 (0.9); b ties at 0.7 -> larger alpha 10.
+    assert row['selected_alphas'] == [1., 10.] and row['selection'] == 'per task, max val_accuracy; ties -> larger alpha'
+    assert row['log10_F61_p10_selected_alpha_min'] == 29. and row['log10_F61_p10_selected_alpha_max'] == 30.
+    assert row['log10_s1_floor_selected_alpha_min'] == 9. and row['log10_s1_floor_selected_alpha_max'] == 10.
+    assert row['log10_F61_p10_costmin_alpha_grid_edge_min'] == 25.
+    assert row['log10_F61_p10_costmin_alpha_grid_edge_max'] == 28.
+    assert row['costmin_alphas_grid_edge'] == [1., 10.]
+    # Pooled selection (Bank: mean CV-fold accuracy): mean test acc alpha 1 = .75 > .65.
+    pooled = qa.family_summary(summary, decomposition, dataset='X', family='f', status='measured',
+                               select_by='test_accuracy', pooled=True)
+    assert pooled['selected_alphas'] == [1.]
+    assert pooled['log10_F61_p10_selected_alpha_min'] == 28. and pooled['log10_F61_p10_selected_alpha_max'] == 30.

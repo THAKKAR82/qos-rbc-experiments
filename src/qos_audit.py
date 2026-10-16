@@ -85,6 +85,30 @@ def sigma_min_scaled(n_rows: int, n_cols: int) -> float:
     raise ValueError(f"D={n_cols} <= N={n_rows}: sigma_min is not implied; compute it explicitly")
 
 
+DENSE_SVD_MAX_D = 2_000
+
+
+def svd_sigma_min(X) -> dict:
+    """Exact singular values by dense SVD, for the D <= N case (small D only).
+
+    Uses numpy's matrix_rank tolerance, sigma_max * max(N, D) * eps. Eq. F50
+    counts zero eigenvalues of X^T X, so sigma_min = 0 whenever rank < D; the
+    raw smallest value and the smallest nonzero value are kept as diagnostics.
+    """
+    if X.shape[1] > DENSE_SVD_MAX_D:
+        raise ValueError(f"D={X.shape[1]} > {DENSE_SVD_MAX_D}: dense SVD not supported here")
+    dense = X.toarray() if sparse.issparse(X) else np.asarray(X)
+    sv = np.linalg.svd(np.asarray(dense, dtype=np.float64), compute_uv=False)
+    tol = float(sv[0] * max(dense.shape) * np.finfo(np.float64).eps)
+    nonzero = sv[sv > tol]
+    rank = int(nonzero.size)
+    return {"method": "numpy.linalg.svd (dense, float64)", "tol": tol, "rank": rank,
+            "D": int(dense.shape[1]), "sigma_max": float(sv[0]), "sigma_min_raw": float(sv[-1]),
+            "smallest_nonzero": float(nonzero[-1]) if rank else 0.0,
+            "sigma_min": float(sv[-1]) if rank == dense.shape[1] else 0.0,
+            "singular_values": sv.tolist()}
+
+
 def kappa_reg(lam: float, sigma_min_scaled: float = 0.0) -> float:
     """Regularized condition number for ||X|| = 1 (Eq. F50 / Lemma F.14)."""
     denominator = sigma_min_scaled**2 + lam
@@ -312,19 +336,28 @@ def audit_binary(X_train, y_train, X_val, y_val, X_test, y_test, *, alphas=ALPHA
     Sweeps sklearn-style alphas because kappa_reg and accuracy trade off: the
     whole curve is reported, not a selected point.
     """
-    _check_labels(y_train, y_val, y_test)
-    y_train, y_val, y_test = (np.asarray(y, dtype=np.int64) for y in (y_train, y_val, y_test))
+    has_val = X_val is not None
+    _check_labels(y_train, y_test, *([y_val] if has_val else []))
+    y_train, y_test = np.asarray(y_train, dtype=np.int64), np.asarray(y_test, dtype=np.int64)
     X_full = _float64_csr(X_train)
     rows, cols = nonzero_support(X_full)
     X, y = X_full[rows], y_train[rows]  # All-zero rows cannot change w (p.143).
     N_nz, D_nz = int(rows.sum()), int(cols.sum())
-    s_min = sigma_min_scaled(N_nz, D_nz)
     sigma = spectral_norm(X, seed=seed)
+    if D_nz > N_nz:
+        s_min, svd, source = sigma_min_scaled(N_nz, D_nz), None, "shape_D_gt_N"
+    else:  # Rank check on the nonzero columns: zero columns would add spurious zeros.
+        svd = svd_sigma_min(X[:, cols])
+        if not math.isclose(svd["sigma_max"], sigma, rel_tol=1e-8):
+            raise ValueError(f"svds/SVD sigma_max disagree: {sigma} vs {svd['sigma_max']}")
+        s_min, source = svd["sigma_min"] / sigma, "dense_svd_rank_check"
     Xs = X / sigma
     sparsity = sparsity_profile(X)
     s = sparsity["s_row_or_col"]
     _, col_nnz = _row_col_counts(X)
-    X_val, X_test = _float64_csr(X_val), _float64_csr(X_test)
+    X_test = _float64_csr(X_test)
+    if has_val:
+        X_val, y_val = _float64_csr(X_val), np.asarray(y_val, dtype=np.int64)
     test_support_nnz = np.diff(X_test[:, cols].indptr)
 
     sweep = []
@@ -332,12 +365,13 @@ def audit_binary(X_train, y_train, X_val, y_val, X_test, y_test, *, alphas=ALPHA
         lam = alpha_to_lambda(alpha, sigma)
         kappa = kappa_reg(lam, s_min)
         w, info = ridge_no_intercept(Xs, y, lam)
-        pv, pt = predict_sign(X_val, w), predict_sign(X_test, w)
+        pt = predict_sign(X_test, w)
         mg = margins(X_test, w, columns=cols)
         g = mg["inf_rescaled"]
         row = {"alpha": float(alpha), "lam": lam, "kappa_reg": kappa, "lsqr": info,
                "residual_ratio": residual_ratio(Xs, y, w, lam),
-               "validation": binary_metrics(y_val, pv), "test": binary_metrics(y_test, pt),
+               "validation": binary_metrics(y_val, predict_sign(X_val, w)) if has_val else None,
+               "test": binary_metrics(y_test, pt),
                "test_zero_decisions": int((X_test @ w == 0).sum()),
                "test_max_abs_entry_as_is": mg["max_abs_entry"],
                "margins_as_is": margin_summary(mg["as_is"], y_test, pt, thresholds),
@@ -353,9 +387,9 @@ def audit_binary(X_train, y_train, X_val, y_val, X_test, y_test, *, alphas=ALPHA
     return {
         "N_full": int(X_full.shape[0]), "D_full": int(X_full.shape[1]),
         "N_nonzero": N_nz, "D_nonzero": D_nz, "sigma_max": sigma,
-        "sigma_min_scaled": s_min, "log2_N_nonzero": math.log2(N_nz), "log2_D_nonzero": math.log2(D_nz),
+        "sigma_min_scaled": s_min, "sigma_min_source": source, "svd": svd, "log2_N_nonzero": math.log2(N_nz), "log2_D_nonzero": math.log2(D_nz),
         "train_label_counts": {"+1": int((y == 1).sum()), "-1": int((y == -1).sum())},
-        "validation_N": int(X_val.shape[0]), "test_N": int(X_test.shape[0]),
+        "validation_N": int(X_val.shape[0]) if has_val else 0, "test_N": int(X_test.shape[0]),
         "sparsity": sparsity,
         "zipf": {"slope": zipf_slope(col_nnz, *zipf_range), "rank_range": list(zipf_range),
                  "column_df_sorted": np.sort(col_nnz[col_nnz > 0])[::-1].tolist()},
@@ -422,8 +456,8 @@ def summary_rows(task: dict, result: dict) -> list[dict]:
             "s_row_or_col": result["sparsity"]["s_row_or_col"], "zipf_slope": result["zipf"]["slope"],
             "kappa_reg": r["kappa_reg"], "residual_ratio": r["residual_ratio"],
             "lsqr_converged": r["lsqr"]["converged"],
-            "val_accuracy": r["validation"]["accuracy"],
-            "val_balanced_accuracy": r["validation"]["balanced_accuracy"],
+            "val_accuracy": r["validation"]["accuracy"] if r["validation"] else None,
+            "val_balanced_accuracy": r["validation"]["balanced_accuracy"] if r["validation"] else None,
             "test_accuracy": r["test"]["accuracy"],
             "test_balanced_accuracy": r["test"]["balanced_accuracy"],
             "gamma_min": mi["q0"], "gamma_p10": mi["q10"], "gamma_p50": mi["q50"],
@@ -437,12 +471,18 @@ def summary_rows(task: dict, result: dict) -> list[dict]:
     return rows
 
 
+CFPB_DATASET = "CFPB Jan-Feb 2026 primary4 binary"
+CFPB_PREPROCESSING = "frozen January TF-IDF (accepted 50k uni+bigram); task rows only; no refit"
+
+
 def ledger_rows(task: dict, result: dict, *, run_id: str, date: str, commit: str | None,
-                output_dir: str, notes_common: dict) -> list[dict]:
-    """Append-only experiment_log.csv rows for one task."""
-    base = dict(dataset=f"CFPB Jan-Feb 2026 primary4 binary:{task['task_id']}", date=date,
+                output_dir: str, notes_common: dict, dataset: str = CFPB_DATASET,
+                preprocessing: str = CFPB_PREPROCESSING,
+                experiment_prefix: str = "cfpb-qos-audit-step1") -> list[dict]:
+    """Append-only experiment_log.csv rows for one task (or CV fold)."""
+    base = dict(dataset=f"{dataset}:{task['task_id']}", date=date,
                 git_commit=commit or "",
-                preprocessing="frozen January TF-IDF (accepted 50k uni+bigram); task rows only; no refit",
+                preprocessing=preprocessing,
                 n_samples=result["N_nonzero"], n_features=result["D_nonzero"],
                 max_sparsity=result["sparsity"]["s_row_or_col"], sketch_method="none",
                 sketch_dimension="", seed=SEED,
@@ -450,7 +490,7 @@ def ledger_rows(task: dict, result: dict, *, run_id: str, date: str, commit: str
     def row(suffix, metric, value, interpretation, **extra):
         notes = dict(notes_common, interpretation=interpretation, task_id=task["task_id"],
                      artifact=f"{output_dir}/{task['task_id']}.json", run_id=run_id, **extra)
-        return dict(experiment_id=f"cfpb-qos-audit-step1-{run_id}-{task['task_id']}{suffix}",
+        return dict(experiment_id=f"{experiment_prefix}-{run_id}-{task['task_id']}{suffix}",
                     **base, metric=metric, result=value,
                     notes=json.dumps(_clean(notes), sort_keys=True))
     out = [row("", "s_row_or_col", result["sparsity"]["s_row_or_col"], INTERPRETATION,
@@ -467,6 +507,8 @@ def ledger_rows(task: dict, result: dict, *, run_id: str, date: str, commit: str
                            INTERPRETATION + "; polynomial prefactor, constants/polylogs/b dropped; order of magnitude only",
                            gamma=r[f"costs_gamma_{label}"]["inputs"]["gamma_test"], **extra))
         for split in ("validation", "test"):
+            if r[split] is None:
+                continue
             for metric in ("accuracy", "balanced_accuracy"):
                 out.append(row(a, f"{split}_{metric}", r[split][metric],
                                "measured holdout score of the audit ridge (theorem conventions)", **extra))
@@ -584,3 +626,167 @@ def write_derived_manifest(output_dir, paths, *, name="derived_manifest.json"):
                 artifacts_sha256=hashes)
     target.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
     return data
+
+
+# ---------------------------------------------------------------- Bank (D < N)
+BANK_CATEGORICAL = ("job", "marital", "education", "default", "housing", "loan",
+                    "contact", "month", "poutcome")
+BANK_NUMERIC = ("age", "balance", "day", "duration", "campaign", "pdays", "previous")
+BANK_CAVEATS = (
+    "Known leakage: the validated encoded matrix is notebook 05's global fit "
+    "(OneHotEncoder + StandardScaler on all 45,211 rows before CV), so fold "
+    "validation rows influenced the encoding (AGENTS.md).",
+    "Bank's validated accounting convention is row-only sparsity; this audit "
+    "reports row-only and row-or-column s side by side.",
+    "Bank is a pipeline-validation dataset, not evidence of practical quantum advantage.",
+    "Audit ridge (LSQR on CSR, no intercept, ||X|| = 1) is not notebook 05's "
+    "RidgeClassifier; its scores are not the regression-fixture scores.",
+)
+
+
+def bank_encoded():
+    """Notebook 05's validated global encoding and +/-1 labels (yes = +1). Read-only."""
+    import pandas as pd
+    from .cfpb_prepare import ROOT
+    from .preprocessing import make_preprocessor
+    df = pd.read_csv(ROOT / "data/bank_marketing_qos_encoded.csv")
+    X = make_preprocessor(list(BANK_CATEGORICAL), list(BANK_NUMERIC)).fit_transform(
+        df[list(BANK_CATEGORICAL) + list(BANK_NUMERIC)])
+    y01 = df["y"].map({"no": 0, "yes": 1}).to_numpy()
+    if np.isnan(y01.astype(float)).any():
+        raise ValueError("Unexpected Bank target values")
+    return X, y01.astype(int), np.where(y01 == 1, 1, -1)
+
+
+def run_bank_step1(output_dir, *, alphas=ALPHAS, delta=DELTA, thresholds=MARGIN_THRESHOLDS,
+                   max_df_fractions=MAX_DF_FRACTIONS, zipf_range=ZIPF_RANGE, seed=SEED,
+                   n_splits=5, cv_seed=42):
+    """Audit Bank on the validated global encoding; each CV fold's validation rows are the test set."""
+    import pandas as pd
+    from .cfpb_prepare import ROOT, git_commit, write_json
+    from .evaluation import make_stratified_cv
+    from .machine_size import max_row_sparsity as _row_s
+
+    out = Path(output_dir)
+    out = out if out.is_absolute() else ROOT / out
+    if out.exists() and any(out.iterdir()):
+        raise FileExistsError(f"{out} is not empty; audit outputs are immutable")
+    out.mkdir(parents=True, exist_ok=True)
+    now = datetime.now(timezone.utc)
+    run_id = now.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
+    data = ROOT / "data/bank_marketing_qos_encoded.csv"
+    X, y01, y = bank_encoded()
+    if X.shape != (45211, 51) or _row_s(X) != 16 or matrix_nnz(X) != 723376:
+        raise ValueError(f"Bank representation drift: {X.shape}")
+    full_svd = svd_sigma_min(X)
+    code = ["src/qos_audit.py", "src/machine_size.py", "src/preprocessing.py", "src/evaluation.py"]
+    folds = list(make_stratified_cv(n_splits=n_splits, seed=cv_seed).split(np.zeros(len(y)), y01))
+    tasks = [f"cv_fold_{k + 1}" for k in range(len(folds))]
+    manifest = dict(
+        run_id=run_id, date_utc=now.isoformat(), interpretation=INTERPRETATION,
+        dataset="Bank Marketing (bank-full)", git_commit=git_commit(ROOT),
+        code_sha256={p: _sha256(ROOT / p) for p in code}, data_sha256=_sha256(data),
+        representation=dict(source="notebook 05 cell 6: make_preprocessor(...).fit_transform(X_raw), global fit",
+                            N=int(X.shape[0]), D=int(X.shape[1]), dtype=str(np.asarray(X).dtype),
+                            max_row_sparsity=_row_s(X), nnz=matrix_nnz(X),
+                            max_row_or_col_sparsity=max_row_or_col_sparsity(X)),
+        full_matrix_svd={k: v for k, v in full_svd.items()},
+        cv=dict(splitter="src.evaluation.make_stratified_cv", n_splits=n_splits, seed=cv_seed,
+                test_set="validation rows of each fold", validation_split="none"),
+        caveats=list(BANK_CAVEATS),
+        python=sys.version, platform=platform.platform(),
+        packages={n: importlib.metadata.version(n) for n in ["numpy", "scipy", "scikit-learn", "pandas"]},
+        config=dict(alphas=list(alphas), delta=delta, margin_thresholds=list(thresholds),
+                    max_df_fractions=list(max_df_fractions), zipf_rank_range=list(zipf_range), seed=seed,
+                    lsqr_tol=LSQR_TOL, lsqr_iter_lim=LSQR_ITER_LIM),
+        conventions=dict(labels="+1 = subscribed (y = yes)",
+                         model="unweighted ridge, no intercept, ||X|| = 1, lam = alpha / sigma_max^2 (LSQR on CSR)",
+                         sigma_min="dense SVD of each fold's training matrix; numpy matrix_rank tolerance; "
+                                   "0 if rank < D (Eq. F50)",
+                         margins="fold validation rows, inf-norm rescaled; standardized entries exceed 1 as-is",
+                         costs="as CFPB step 1: F60 without b, F61 as log10(M/(R N)); orders of magnitude only"),
+        status="running")
+    write_json(out / "manifest.json", _clean(manifest))
+    summary, ledger = [], []
+    notes_common = dict(code_sha256=manifest["code_sha256"], data_sha256=manifest["data_sha256"],
+                        caveat="global preprocessing before CV (known leakage)")
+    Xc = sparse.csr_matrix(np.asarray(X, dtype=np.float64))  # Audit-internal; Bank pipeline untouched.
+    for task_id, (train, test) in zip(tasks, folds):
+        result = audit_binary(Xc[train], y[train], None, None, Xc[test], y[test], alphas=alphas,
+                              delta=delta, thresholds=thresholds, max_df_fractions=max_df_fractions,
+                              zipf_range=zipf_range, seed=seed)
+        task = dict(task_id=task_id, kind="cv_fold", positive_class="yes", negative_class="no")
+        payload = dict(task=task, run_id=run_id, interpretation=INTERPRETATION,
+                       caveats=list(BANK_CAVEATS), conventions=manifest["conventions"], **result)
+        write_json(out / f"{task_id}.json", _clean(payload))
+        summary += summary_rows(task, result)
+        ledger += ledger_rows(task, result, run_id=run_id, date=now.date().isoformat(),
+                              commit=manifest["git_commit"], output_dir=str(out.relative_to(ROOT)),
+                              notes_common=notes_common, dataset="Bank Marketing (bank-full)",
+                              preprocessing="validated global encoding (notebook 05 cell 6; known leakage); "
+                                            "fold train rows; dense->CSR inside audit only",
+                              experiment_prefix="bank-qos-audit-step1")
+    pd.DataFrame(summary).to_csv(out / "summary.csv", index=False)
+    pd.DataFrame(ledger).to_csv(out / "ledger_rows.csv", index=False)
+    manifest.update(status="completed", tasks=tasks,
+                    artifacts_sha256={p.name: _sha256(p) for p in sorted(out.iterdir()) if p.name != "manifest.json"})
+    write_json(out / "manifest.json", _clean(manifest))
+    return out, run_id
+
+
+# ---------------------------------------------------------------- cross-dataset summary
+ANALYTIC_STATUS = "analytic, not measured; representation not onboarded in this repo"
+
+
+def analytic_dense_column_row(dataset: str, n_rows: int) -> dict:
+    """With any fully dense column, s_row_or_col = N, so log10 s^7 = 7 log10 N."""
+    return dict(dataset=dataset, family="all (any dense column)", status=ANALYTIC_STATUS,
+                n_tasks=None, N=int(n_rows), s_row_or_col=int(n_rows), s_over_N=1.0,
+                **{"log10_s^7": 7 * math.log10(n_rows)})
+
+
+def _select_alpha(frame, column):
+    """Row with the highest `column`; ties go to the larger alpha (smaller kappa_reg)."""
+    return frame.sort_values([column, "alpha"], ascending=[False, False]).iloc[0]
+
+
+def family_summary(summary, decomposition, *, dataset: str, family: str, status: str,
+                   select_by: str = "val_accuracy", pooled: bool = False) -> dict:
+    """One row per dataset/task family.
+
+    Headline: log10 F61 at gamma = p10 at the alpha selected by `select_by`
+    (per task, or one alpha for the family by mean across tasks when pooled,
+    e.g. Bank's mean CV-fold accuracy). Secondary: the cost-minimizing alpha,
+    which sits at the grid edge.
+    """
+    import pandas as pd
+    s = summary.assign(s_over_N=summary.s_row_or_col / summary.N_nonzero)
+    merged = s.merge(decomposition[["task_id", "alpha", "log10_total", "log10_total_s1"]],
+                     on=["task_id", "alpha"], validate="one_to_one")
+    if pooled:
+        alpha = float(_select_alpha(merged.groupby("alpha", as_index=False)[select_by].mean(), select_by).alpha)
+        chosen = merged[merged.alpha == alpha]
+        selection = f"one alpha for all tasks, max mean {select_by}; ties -> larger alpha"
+    else:
+        chosen = pd.DataFrame([_select_alpha(g, select_by) for _, g in merged.groupby("task_id", sort=False)])
+        selection = f"per task, max {select_by}; ties -> larger alpha"
+    costmin = merged.loc[merged.groupby("task_id").log10_total.idxmin()]
+    return dict(dataset=dataset, family=family, status=status, n_tasks=int(s.task_id.nunique()),
+                selection=selection, selected_alphas=sorted(set(chosen.alpha.astype(float))),
+                log10_F61_p10_selected_alpha_min=float(chosen.log10_total.min()),
+                log10_F61_p10_selected_alpha_max=float(chosen.log10_total.max()),
+                log10_s1_floor_selected_alpha_min=float(chosen.log10_total_s1.min()),
+                log10_s1_floor_selected_alpha_max=float(chosen.log10_total_s1.max()),
+                selected_alpha_kappa_reg_min=float(chosen.kappa_reg.min()),
+                selected_alpha_kappa_reg_max=float(chosen.kappa_reg.max()),
+                N_min=int(s.N_nonzero.min()), N_max=int(s.N_nonzero.max()),
+                s_row_only_min=int(s.s_row_only.min()), s_row_only_max=int(s.s_row_only.max()),
+                s_row_or_col_min=int(s.s_row_or_col.min()), s_row_or_col_max=int(s.s_row_or_col.max()),
+                s_over_N_min=float(s.s_over_N.min()), s_over_N_max=float(s.s_over_N.max()),
+                kappa_reg_min=float(s.kappa_reg.min()), kappa_reg_max=float(s.kappa_reg.max()),
+                gamma_p10_min=float(s.gamma_p10.min()), gamma_p10_max=float(s.gamma_p10.max()),
+                costmin_alphas_grid_edge=sorted(set(costmin.alpha.astype(float))),
+                log10_F61_p10_costmin_alpha_grid_edge_min=float(costmin.log10_total.min()),
+                log10_F61_p10_costmin_alpha_grid_edge_max=float(costmin.log10_total.max()),
+                log10_s1_floor_costmin_alpha_min=float(costmin.log10_total_s1.min()),
+                log10_s1_floor_costmin_alpha_max=float(costmin.log10_total_s1.max()))

@@ -1,0 +1,162 @@
+{
+  "artifacts_sha256": {
+    "cv_fold_1.json": "5079acd368dda8c775fe216cca4b945db9b5764e8d561e9c06833cd545bc0696",
+    "cv_fold_2.json": "a3f98cd8bc112fe24615c54f6e8ad8d20865511c0e40ee57ab4e807f7a23ad18",
+    "cv_fold_3.json": "5161f5a27adb895df66f3dc420cea83721fdc289a92f74fed730c4cd9099d00e",
+    "cv_fold_4.json": "e76f9ce25ae11b6317399c901eec5eb7740dea9f29c49a72e36bd5e3097e81f7",
+    "cv_fold_5.json": "572b2c8cadcf01b703c11f843422f9dc47539e17da0d2b1dc0fd8b458d18393e",
+    "ledger_rows.csv": "d058ccb5ca29940c90a752e7930d4ebbaceff40dd67c9cc738456b120e438ba5",
+    "summary.csv": "702c08a22cc02a24d84f3038a13988c6fda8cce73de920ad7a3baaf19c8b732f"
+  },
+  "caveats": [
+    "Known leakage: the validated encoded matrix is notebook 05's global fit (OneHotEncoder + StandardScaler on all 45,211 rows before CV), so fold validation rows influenced the encoding (AGENTS.md).",
+    "Bank's validated accounting convention is row-only sparsity; this audit reports row-only and row-or-column s side by side.",
+    "Bank is a pipeline-validation dataset, not evidence of practical quantum advantage.",
+    "Audit ridge (LSQR on CSR, no intercept, ||X|| = 1) is not notebook 05's RidgeClassifier; its scores are not the regression-fixture scores."
+  ],
+  "code_sha256": {
+    "src/evaluation.py": "a93e3e626edb9eb91f390bf6dfc8e3d4ba1e769715779e498e63e14590c2f413",
+    "src/machine_size.py": "60785c741d3ae995bae25c1f4b14be7286f7ac305555878a8c9dc73a0d5838d1",
+    "src/preprocessing.py": "8fab0329f5e14b435a35131583443e1280d6ec5ea7535aa9c3ed0214a5ecf893",
+    "src/qos_audit.py": "a9accee716fe67670513d98e3cb9eedd1fc5d86fdd023f00113ef1a785cbb6fd"
+  },
+  "config": {
+    "alphas": [
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "delta": 0.1,
+    "lsqr_iter_lim": 20000,
+    "lsqr_tol": 1e-10,
+    "margin_thresholds": [
+      0.3,
+      0.1,
+      0.03,
+      0.01,
+      0.003
+    ],
+    "max_df_fractions": [
+      1.0,
+      0.5,
+      0.2,
+      0.1,
+      0.05,
+      0.01
+    ],
+    "seed": 42,
+    "zipf_rank_range": [
+      10,
+      1000
+    ]
+  },
+  "conventions": {
+    "costs": "as CFPB step 1: F60 without b, F61 as log10(M/(R N)); orders of magnitude only",
+    "labels": "+1 = subscribed (y = yes)",
+    "margins": "fold validation rows, inf-norm rescaled; standardized entries exceed 1 as-is",
+    "model": "unweighted ridge, no intercept, ||X|| = 1, lam = alpha / sigma_max^2 (LSQR on CSR)",
+    "sigma_min": "dense SVD of each fold's training matrix; numpy matrix_rank tolerance; 0 if rank < D (Eq. F50)"
+  },
+  "cv": {
+    "n_splits": 5,
+    "seed": 42,
+    "splitter": "src.evaluation.make_stratified_cv",
+    "test_set": "validation rows of each fold",
+    "validation_split": "none"
+  },
+  "data_sha256": "0bd498d9b496d144828409a25567c465f5c5cac6e675ed3adbbd52d02a66d4c6",
+  "dataset": "Bank Marketing (bank-full)",
+  "date_utc": "2026-10-16T17:59:10.660173+00:00",
+  "full_matrix_svd": {
+    "D": 51,
+    "method": "numpy.linalg.svd (dense, float64)",
+    "rank": 43,
+    "sigma_max": 455.63128737701436,
+    "sigma_min": 0.0,
+    "sigma_min_raw": 2.545434940077796e-13,
+    "singular_values": [
+      455.63128737701436,
+      276.3144011377719,
+      233.64857417543308,
+      230.2167169746766,
+      212.25891351351774,
+      205.93493288184806,
+      194.65648867066807,
+      174.20638586181084,
+      161.4711600034729,
+      140.16325321049584,
+      127.38876460203889,
+      118.7976876408604,
+      106.33908003197739,
+      103.12354597296888,
+      87.40080967296394,
+      84.03821778351066,
+      77.9189949648755,
+      76.81543626250402,
+      72.96521646871912,
+      67.85130656507475,
+      65.62609092799963,
+      62.77034077610579,
+      59.289432391801945,
+      56.10408617415599,
+      53.39004914206977,
+      50.25120822052069,
+      48.24275029183404,
+      46.92287991507026,
+      45.466068419733766,
+      42.42218885075538,
+      40.485069139482086,
+      39.039743643256934,
+      38.17536265568697,
+      36.50295591724288,
+      35.75059047819109,
+      34.58729033529532,
+      33.861456239352286,
+      29.375415264791894,
+      27.985829215693663,
+      24.573104088852258,
+      22.33141721549135,
+      17.27881883975704,
+      15.083377337930642,
+      3.754809267057421e-12,
+      1.6107158724316257e-12,
+      1.3546452114349783e-12,
+      1.0656011931431222e-12,
+      1.0319204240766931e-12,
+      7.941621742090994e-13,
+      4.4846254187922325e-13,
+      2.545434940077796e-13
+    ],
+    "smallest_nonzero": 15.083377337930642,
+    "tol": 4.5740180828706555e-09
+  },
+  "git_commit": "f13a9fe937ba1b19ad38f91f64e997a797c6594f",
+  "interpretation": "calculated / theoretical accounting",
+  "packages": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1"
+  },
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "representation": {
+    "D": 51,
+    "N": 45211,
+    "dtype": "float64",
+    "max_row_or_col_sparsity": 45211,
+    "max_row_sparsity": 16,
+    "nnz": 723376,
+    "source": "notebook 05 cell 6: make_preprocessor(...).fit_transform(X_raw), global fit"
+  },
+  "run_id": "20261016T175910Z-a543a93d",
+  "status": "completed",
+  "tasks": [
+    "cv_fold_1",
+    "cv_fold_2",
+    "cv_fold_3",
+    "cv_fold_4",
+    "cv_fold_5"
+  ]
+}
