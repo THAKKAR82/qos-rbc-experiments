@@ -1,0 +1,104 @@
+{
+  "artifacts_sha256": {
+    "checking_or_savings_account__vs__mortgage.json": "7de253b0d30434ed8c6aa65f8d9fba8060ed63a82ea4fb43d636080ae7b7dbd7",
+    "checking_or_savings_account__vs__rest.json": "3df6a1e74a17f817955c31193932367fd7f199f29ae204fbcfc0b73baeb12736",
+    "credit_card__vs__checking_or_savings_account.json": "0fd20cdec48a8c9f0e2086ce5d37fd4ec2d4bb03a19f90523d076fccb49c6fe2",
+    "credit_card__vs__mortgage.json": "7c789b29415be9f270fadbe342c56dcd4f9b3f473286d2a6fb6162f00da8591d",
+    "credit_card__vs__rest.json": "e2b5523a86318298291b23f05439ec5eb8ca1e252b7979356be69945b23cdbf8",
+    "debt_collection__vs__checking_or_savings_account.json": "f29da462d6779272005910831f5d67fefaebaa697a38e12b8406e014d034bbb6",
+    "debt_collection__vs__credit_card.json": "270012ba51b9f89d30bd365b4920a2a9d279b8757b3643079680974ec3c7158b",
+    "debt_collection__vs__mortgage.json": "e73bf87d3728fc25378eaa6fb974de8fd901685ddf6f5a4465fd2dc0d051c6ff",
+    "debt_collection__vs__rest.json": "21ebd7777a56a6db832280c4561333c8aea2d46e568e378674961949829b2a33",
+    "ledger_rows.csv": "bd9e4613031fb57ac7552407a060817663fdf87ed90f5abf7cab430e38bb9916",
+    "mortgage__vs__rest.json": "f1908f94d380afdf545d1700176e18d8b00d3957e0fc3f6d6e5db2aeb946619a",
+    "summary.csv": "7d40535c6d930a371960cb02194b60bb06e60153dd8c8636ce5156cf4c13580c"
+  },
+  "classes": [
+    "Debt collection",
+    "Credit card",
+    "Checking or savings account",
+    "Mortgage"
+  ],
+  "code_provenance": "git_commit plus code_sha256 (audit code uncommitted at run time if hashes differ from HEAD)",
+  "code_sha256": {
+    "src/cfpb.py": "0eec29ba894ef9869edbcc113c5be3976e53f67a1185e8779fed20ccf071b4b3",
+    "src/cfpb_baselines.py": "7ac6e2105a490f7723c534aa2b240c83d91ced28b155c77980afc2f1ea0016be",
+    "src/machine_size.py": "60785c741d3ae995bae25c1f4b14be7286f7ac305555878a8c9dc73a0d5838d1",
+    "src/qos_audit.py": "07cd3a7ff3b8cac5dad1e960844d37147fab6ad2a684e9bf439e21a7d82d0885",
+    "src/text_preprocessing.py": "59b4c752c5a53405adb7157c7e5c7ed2a1bf552fcc60596d6f035fddcae1e26f"
+  },
+  "config": {
+    "alphas": [
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "delta": 0.1,
+    "lsqr_iter_lim": 20000,
+    "lsqr_tol": 1e-10,
+    "margin_thresholds": [
+      0.3,
+      0.1,
+      0.03,
+      0.01,
+      0.003
+    ],
+    "max_df_fractions": [
+      1.0,
+      0.5,
+      0.2,
+      0.1,
+      0.05,
+      0.01
+    ],
+    "seed": 42,
+    "threads": 1,
+    "zipf_rank_range": [
+      10,
+      1000
+    ]
+  },
+  "conventions": {
+    "N_D": "N_nonzero/D_nonzero over the task's training rows are primary (paper p.143); full sizes recorded",
+    "costs": "F60 without additive b; F61 as log10(M/(R N)) with R=1; log2 throughout; log m floored at 1 bit; constants and hidden polylogs dropped: orders of magnitude only",
+    "labels": "+1 = lower CLASSES index (pairs) or the named class (one-vs-rest)",
+    "margins": "test rows inf-norm rescaled over training-support columns; predictions unchanged",
+    "max_df": "post-hoc column mask, no refit",
+    "model": "unweighted ridge, no intercept; uniform-sample QOS computes unweighted ridge, so one-vs-rest balanced accuracy may be poor; no weighted variant in this task",
+    "r_reg": "squared ratio, Eq. F49",
+    "sigma_min": "0 because D_nonzero > N_nonzero (Eq. F50 counts zero eigenvalues of X^T X)"
+  },
+  "date_utc": "2026-10-16T16:16:37.861985+00:00",
+  "gate_record": "docs/decisions/cfpb_modeling_gate.md",
+  "gate_record_sha256": "441061e6ec7d0ece2f2dceb028f0ed272d0e4a42526c511038452017c616f0a5",
+  "git_commit": "9f2da01469398cfc97553f5207dccd047a038d69",
+  "interpretation": "calculated / theoretical accounting",
+  "packages": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1",
+    "threadpoolctl": "3.7.0"
+  },
+  "paper": "Zhao et al., arXiv:2604.07639v2 (1 Oct 2026), Theorem F.13, Eqs. F48-F50, F60, F61, A9",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "preparation": "validation/cfpb/20261014T192947Z-7b6668f9",
+  "preparation_manifest_sha256": "2bbacfa0dd9df5b85d3bb8b20bd500cd80064a41a0a8d07f753fb7ee73f3554f",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "run_id": "20261016T161637Z-e70ae078",
+  "source_sha256": "664f1cae8d3a19dfd6894e2ca760f5b3f0bb4b71e466f38235473e1ea5b29f6d",
+  "status": "completed",
+  "tasks": [
+    "debt_collection__vs__credit_card",
+    "debt_collection__vs__checking_or_savings_account",
+    "debt_collection__vs__mortgage",
+    "credit_card__vs__checking_or_savings_account",
+    "credit_card__vs__mortgage",
+    "checking_or_savings_account__vs__mortgage",
+    "debt_collection__vs__rest",
+    "credit_card__vs__rest",
+    "checking_or_savings_account__vs__rest",
+    "mortgage__vs__rest"
+  ]
+}

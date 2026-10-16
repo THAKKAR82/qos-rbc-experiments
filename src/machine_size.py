@@ -38,6 +38,22 @@ def max_row_sparsity(X):
     return int(counts.max()) if counts.size else 0
 
 
+def max_row_or_col_sparsity(X):
+    """Maximum mathematical nonzeros in any row or column (the QOS reference s).
+
+Not the Bank convention: Bank accounting uses max_row_sparsity. Zero for
+empty matrices.
+"""
+    matrix = _countable_matrix(X)
+    if sparse.issparse(matrix):
+        rows = np.diff(matrix.indptr)
+        columns = np.bincount(matrix.indices, minlength=matrix.shape[1])
+    else:
+        rows = np.count_nonzero(matrix, axis=1)
+        columns = np.count_nonzero(matrix, axis=0)
+    return int(max(rows.max(initial=0), columns.max(initial=0)))
+
+
 def matrix_nnz(X):
     """Count mathematical nonzeros in a dense or sparse 2-D matrix."""
     matrix = _countable_matrix(X)
