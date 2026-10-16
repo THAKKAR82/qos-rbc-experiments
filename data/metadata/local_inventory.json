@@ -1,0 +1,25 @@
+{
+  "inspection_date": "2026-10-16",
+  "method": "Streaming csv.DictReader counts; checksums streamed separately; no feature engineering",
+  "files": {
+    "data/CCDB_Export_15_January_2026_through_February_2026.csv": {
+      "n_rows": 1038383,
+      "n_columns": 16
+    },
+    "data/CCDB_Export_21_August_2026.csv": {
+      "n_rows": 667140,
+      "n_columns": 16
+    },
+    "data/bank_marketing_qos_encoded.csv": {
+      "n_rows": 45211,
+      "n_columns": 23
+    },
+    "data/paysim.csv": {
+      "n_rows": 6362620,
+      "n_columns": 11,
+      "fraud_rows": 8213,
+      "step_min": 1,
+      "step_max": 743
+    }
+  }
+}

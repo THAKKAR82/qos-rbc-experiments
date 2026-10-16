@@ -9,7 +9,7 @@ This project rigorously evaluates Quantum Oracle Sketching (QOS) for large-scale
 | Path | Purpose |
 | --- | --- |
 | `AGENTS.md` | Stable scientific and development policy |
-| `data/` | Bank Marketing input, including legacy derived columns excluded by notebook 05 |
+| `data/` | [Dataset registry and acquisition instructions](data/README.md); local raw inputs, checksums, and reconstruction metadata |
 | `notebooks/00–04` | Earlier exploratory notebooks; unchanged by the refactor |
 | `notebooks/05_qos_paper_style_bank_svm.ipynb` | Bank configuration, experiment execution, figures, exports, and validation |
 | `src/` | Preprocessing, sketches, resource accounting, and Ridge/CV/sweep evaluation |
@@ -19,6 +19,13 @@ This project rigorously evaluates Quantum Oracle Sketching (QOS) for large-scale
 | `reference/quantum-oracle-sketching/` | Local QOS reference implementation |
 
 ## Environment and tests
+
+For dataset versions, redistribution decisions, and checksum verification, see
+[`data/README.md`](data/README.md) and [`data/manifest.csv`](data/manifest.csv).
+Raw source files, curated membership, reconstructed feature matrices, and task-specific
+audit outputs are distinct objects. Most raw inputs and CFPB preparation artifacts
+are local and ignored; cloning alone does not provide them. The existing tracked
+Bank fixture remains unchanged. No additional raw data publication is proposed.
 
 The verified environment uses Python 3.13.9. From the repository root, create or activate a virtual environment and install the pinned dependencies:
 
