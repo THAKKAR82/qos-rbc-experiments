@@ -1,0 +1,45 @@
+{
+  "artifacts_sha256": {
+    "result.json": "0d973d976b26d9e02afd9832e2362855846ebb09142fea4cff25d781eeae4610"
+  },
+  "base_commit": "6d25652632b9299caad17f347bfa755e05749668",
+  "code_sha256": {
+    "experiments/qos_tightness/qostight/__init__.py": "a9244f0a38e854ca10ac191ade6216a181db96b1cce9786004f65b161ec9f1ba",
+    "experiments/qos_tightness/qostight/accounting.py": "0ea2357394e9762c977fd9fb577906851e6d3ab616f8073be8e757f69712e526",
+    "experiments/qos_tightness/qostight/blockenc.py": "c1b0be993b0dd471967d766f775cd7d64971afd6fd885f0c91094e8cbbdc0fbb",
+    "experiments/qos_tightness/qostight/env.py": "3a3918c77bc0d03cc76e125402365f0ac94f5faa171ac7a1218ed575925f5ced",
+    "experiments/qos_tightness/qostight/matrices.py": "c61f9c36d7907263eb23d9112914676569b9ab0e635f316e47bca1d1eaa6c764",
+    "experiments/qos_tightness/qostight/n_check.py": "7526267702ef6fd8a3d70dae48d335b0c2bd97e6d80f545859f1683e3ff7a919",
+    "experiments/qos_tightness/qostight/phase1.py": "f3340bf3ec04b698c1f82606d8221210fd79f03434667ca097ef3a9b4540544e",
+    "experiments/qos_tightness/qostight/phase_a.py": "82fdef692a9f00e6390d82d45c45687b5b445a2c0d27b1116f79d4d86b52e771",
+    "experiments/qos_tightness/qostight/phase_b_diagnostics.py": "4af21b386420d58769a7fbc9575ee412138dcbe351f559360e55982a212ef3a4",
+    "experiments/qos_tightness/qostight/phase_b_prototype.py": "ea3f3d586b12c87e57ea5f1bbd771a9c05d0933d3aef87358a584c5814dbd3b1",
+    "experiments/qos_tightness/qostight/phase_cache.py": "ba8866309d0dd222254db764c7db1fd59af4064a3d929894f8c40d9a4e17d3a0",
+    "experiments/qos_tightness/qostight/polynomials.py": "1bc5b4658d16ead2990176f2ae5b72cb5519f00b5f1d4a8cc3cbe1345d1356c7",
+    "experiments/qos_tightness/qostight/qsvt_tools.py": "2b4ccf9ff1bd46399756478a537a664b96d25f905ee6ce0435d9b06cc594a8d1",
+    "experiments/qos_tightness/qostight/resources.py": "87bea1f40ad60b6bfc7f8f0d7454047d361cbe741c36f15df363bd7cbd4f541f",
+    "experiments/qos_tightness/qostight/run_phase1.py": "97ffb9f5e231de5b40495206e3071c716f3310ad4edaa1c9d2f55e0795d6af61",
+    "experiments/qos_tightness/qostight/run_phase_b_calibration.py": "74e2577aa68fe4073e66189e3734a3d8dccb0f5a7f602d762c91d2ca53e55e90",
+    "experiments/qos_tightness/qostight/run_phase_b_optimization.py": "d7839e1e0b9c6e367b3aedbe0344e9a5a674d2ac03d20e004443e59f9719e111"
+  },
+  "date_utc": "2026-10-19T18:56:57.667324+00:00",
+  "interpretation": "simulation (expected-unitary QOS, reference convention)",
+  "job": "kappa4",
+  "measurement": {
+    "gate_violation": null,
+    "peak_rss_bytes": 1156251648,
+    "seconds": 19.884501917054877
+  },
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "reference_commit": "a3fe8d6fe777750749f5e90131180e016088bdaf",
+  "scope": "one optimization/correctness gate job; CPU runtime/RSS measured; no full sweeps",
+  "status": "completed",
+  "versions": {
+    "jax": "0.8.1",
+    "numpy": "2.3.5",
+    "psutil": "7.2.2",
+    "pyqsp": "0.2.0",
+    "scipy": "1.16.3"
+  }
+}

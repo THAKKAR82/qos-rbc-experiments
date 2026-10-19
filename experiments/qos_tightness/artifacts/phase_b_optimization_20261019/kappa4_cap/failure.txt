@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "experiments/qos_tightness/qostight/run_phase_b_optimization.py", line 66, in main
+    result = calibrate(kappa=4. if args.job.startswith('kappa4') else 2.,
+                       phase_backend='batched', cache_dir=str(root/'phase_cache'),
+                       max_degree=8191 if args.job == 'kappa4' else 4095)
+  File "experiments/qos_tightness/qostight/phase_b_prototype.py", line 258, in calibrate
+    fp,af,pf=timed('fixed_point_polynomial_and_angles',lambda:fixed_point_polynomial(kappa,eps_state,phase_backend,cache_dir,max_degree))
+             ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "experiments/qos_tightness/qostight/phase_b_prototype.py", line 235, in timed
+    t=time.perf_counter();out=fn();timings[name]=time.perf_counter()-t;return out
+                              ~~^^
+  File "experiments/qos_tightness/qostight/phase_b_prototype.py", line 258, in <lambda>
+    fp,af,pf=timed('fixed_point_polynomial_and_angles',lambda:fixed_point_polynomial(kappa,eps_state,phase_backend,cache_dir,max_degree))
+                                                              ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "experiments/qos_tightness/qostight/phase_b_prototype.py", line 107, in fixed_point_polynomial
+    p, info = odd_interpolant(target, int(2*k)+1, tol, threshold, lambda x: np.ones_like(x), max_degree=max_degree)
+              ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "experiments/qos_tightness/qostight/phase_b_prototype.py", line 80, in odd_interpolant
+    raise RuntimeError(f'no bounded polynomial by degree {max_degree}: error={error}, peak={bound}')
+RuntimeError: no bounded polynomial by degree 4095: error=1.897510321402507e-05, peak=1.0000189801156905

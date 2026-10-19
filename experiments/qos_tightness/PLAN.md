@@ -65,6 +65,15 @@ The tiny fixed-test pipeline passes; full sweeps remain unapproved and unready.
 Conservative phase finding exceeds the three-hour budget in conditional forecasts;
 verified explicit sampling, reusable Clifford shadows and nested accounting remain gates.
 
+Additional optimization/correctness gate completed 2026-10-19:
+[measured report](PHASE_B_OPTIMIZATION.md) and
+[theorem-to-code audit](PHASE_B_FIDELITY_AUDIT.md). Equivalent batched phase
+synthesis reduces the kappa=2 FP stage from 407.5 s to 4.38 s; kappa=4 passes
+with an explicit degree cap increase. The prior forecast is historical.
+Full sweeps remain unapproved, and the result remains partial simulation with
+provisional analytical accounting. This gate's artifacts are isolated under
+`experiments/qos_tightness/artifacts/`, as required by the newer instruction.
+
 | Component | Source | Dependence |
 |---|---|---|
 | Sparse index oracle | Lemma D.21 | Õ(R N s³/ε) |

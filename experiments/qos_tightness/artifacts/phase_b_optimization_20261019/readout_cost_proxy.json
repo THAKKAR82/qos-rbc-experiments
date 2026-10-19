@@ -1,0 +1,45 @@
+{
+  "interpretation": "classical array-throughput proxy ONLY; no Clifford/shadow simulation",
+  "seed": 42,
+  "epsilon": 0.07071067811865474,
+  "estimation_tolerance": 0.03535533905932737,
+  "assumed_variance_upper_bound": 6,
+  "block_size": 19201,
+  "median_groups": 17,
+  "records_per_model": 326417,
+  "conditional_union_failure_bound": 0.049539117608219385,
+  "rows": [
+    {
+      "synthetic_lookup_record_count": 1080,
+      "measured_seconds": [
+        0.03925504186190665,
+        0.037557292031124234,
+        0.03731287503615022,
+        0.03719825018197298,
+        0.03719816613011062
+      ],
+      "forecast_200_repetitions_seconds": 7.462575007230043
+    },
+    {
+      "synthetic_lookup_record_count": 36720,
+      "measured_seconds": [
+        0.05712658306583762,
+        0.05604737484827638,
+        0.056096083018928766,
+        0.05582354194484651,
+        0.056080374866724014
+      ],
+      "forecast_200_repetitions_seconds": 11.216074973344803
+    }
+  ],
+  "measurement": {
+    "peak_rss_bytes": 118554624,
+    "gate_violation": null,
+    "seconds": 0.4712881250306964
+  },
+  "excluded_costs": [
+    "stabilizer enumeration and validation",
+    "Born-weight and observable tables",
+    "controlled solver or freshly sampled oracle execution"
+  ]
+}

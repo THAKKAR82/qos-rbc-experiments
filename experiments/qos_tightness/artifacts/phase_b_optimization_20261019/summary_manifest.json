@@ -1,0 +1,14 @@
+{
+  "source_sha256": "6dac155667826461bf2e2228a69e0a230927e8386afe3bf169b9fd4fa2c64d17",
+  "inputs_sha256": {
+    "baseline": "b924d142a1279b8b96c9266ad5e3c36366934fb83c1c0420cfda02c37d5d6c43",
+    "cold": "75b7c0e5406bb8f6062f760b359d436e34c7aed61d6786124f64788dda6fd012",
+    "warm": "01f4c355336d6dc1de4039b807d81771b8bf699538ae2ae5fe6c4ba9ddd411c3",
+    "kappa4": "0d973d976b26d9e02afd9832e2362855846ebb09142fea4cff25d781eeae4610"
+  },
+  "outputs_sha256": {
+    "benchmark.csv": "feb4dd1d2c5a6b2a0f61859f62fa557e1ef19fdeaaca2ff8ed3d4caec63f7952",
+    "comparison.json": "b75e018232db91d00b402a767ff851c6ae2e32456dee412dfbff6e0e24b8a2a5",
+    "benchmark.png": "4ca6f199b43934e6b39143064e5601b41adbfbf6cdd415b6315d1750e6e19aa7"
+  }
+}

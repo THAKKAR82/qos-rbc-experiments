@@ -1,0 +1,21 @@
+{
+  "exit_code": 0,
+  "measurement": {
+    "peak_rss_bytes": 920223744,
+    "gate_violation": null,
+    "seconds": 104.6384462499991
+  },
+  "test_sources_sha256": {
+    "experiments/qos_tightness/tests/test_run_phase1.py": "34b681ca34d395b87f52d3b7a4cb3ef81601a2afad2ac8e5ee10bc970cf3cb91",
+    "experiments/qos_tightness/tests/conftest.py": "4b8a9ffa86660d058f07b18c85515eb1b7b689045f3d8bd8be71034d9c6ee83e",
+    "experiments/qos_tightness/tests/test_n_check.py": "306f8802afeb82468a138c2908bf083338d1380356b5089aa945dad39359a67f",
+    "experiments/qos_tightness/tests/test_phase_a.py": "f0ba4fe321981cd335bf59a7821b867a0a3719e43eef4bc1111c86d5f0f2a66b",
+    "experiments/qos_tightness/tests/test_phase1_runner.py": "a71ea38702342841167c5c6e0848022ed98c4a51ba73ae9fa43183ebeab3af7f",
+    "experiments/qos_tightness/tests/test_phase_b_prototype.py": "a860a34606c21e9bf68feb8522275e2f3c4465a0a3008d93d6a7d4419dbc4396",
+    "experiments/qos_tightness/tests/test_phase1.py": "787c9afdd3e057d55055e8610755d63304feb4ad505438215890ae23789de484",
+    "experiments/qos_tightness/tests/test_revalidation.py": "899bd72cf346214ddcb7029f2e36ccec664204811e4daca3f0ad15abb0213905",
+    "experiments/qos_tightness/tests/test_sign_fix.py": "bde832387b8d21c6a654a1ff326708658cfb2eca2ecb450fbbe8677537c8a9ad",
+    "experiments/qos_tightness/tests/test_blockenc.py": "ca4cd2bbc6435dec2b688f3c178cfac29d27360aae1128e522af4d9de3e13cf0",
+    "experiments/qos_tightness/tests/test_phase_cache.py": "1ae7a60314b02891a38128fbd9b5e6da96d78ee16f7016f2962df33c3a41c0d5"
+  }
+}

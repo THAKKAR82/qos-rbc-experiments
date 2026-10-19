@@ -1,0 +1,22 @@
+[
+  {
+    "job": "cold",
+    "total_speedup": 38.24065389317211,
+    "phase_stage_speedup": 93.108261828883,
+    "peak_RSS_ratio": 0.9970009792720744,
+    "state_error_change": 0.0,
+    "mean_signal_change": 0.0,
+    "degrees_equal": true,
+    "resources_equal": true
+  },
+  {
+    "job": "warm",
+    "total_speedup": 49.11883600461108,
+    "phase_stage_speedup": 205.16382127049457,
+    "peak_RSS_ratio": 0.879243512322507,
+    "state_error_change": 0.0,
+    "mean_signal_change": 0.0,
+    "degrees_equal": true,
+    "resources_equal": true
+  }
+]

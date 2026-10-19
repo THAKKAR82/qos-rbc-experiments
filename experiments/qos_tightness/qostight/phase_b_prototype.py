@@ -81,7 +81,7 @@ def odd_interpolant(target, start, eps, domain, desired, max_degree=4095):
 
 
 @lru_cache(maxsize=16)
-def inverse_polynomial(kappa, eps_state):
+def inverse_polynomial(kappa, eps_state, phase_backend='upstream', cache_dir=None, max_degree=4095):
     # Physical augmented block is A_lambda/2. K=2*kappa includes subnormalization.
     K = 2*kappa; eta = eps_state/(80*kappa)
     def target(x):
@@ -90,22 +90,24 @@ def inverse_polynomial(kappa, eps_state):
         inner = .5*(3*u-3*u**3+u**5)
         outer = np.divide(.5, u, out=np.zeros_like(u), where=u != 0)
         return np.where(np.abs(u) <= 1, inner, outer)
-    p, info = odd_interpolant(target, int(16*K), eta, 1/K, lambda x: 1/(2*K*x))
-    angles, chk = verified_qsvt_angles(p)
+    p, info = odd_interpolant(target, int(16*K), eta, 1/K, lambda x: 1/(2*K*x), max_degree=max_degree)
+    angles, chk = phase_angles(p, phase_backend, cache_dir)
     return p, np.asarray(angles), dict(info, angle_error=chk['max_dev'], K=K,
+                                      phase_synthesis=chk,
                                       extension='C2 splice; degree not asserted proof-optimal')
 
 
 @lru_cache(maxsize=16)
-def fixed_point_polynomial(kappa, eps_state):
+def fixed_point_polynomial(kappa, eps_state, phase_backend='upstream', cache_dir=None, max_degree=4095):
     threshold = 1/(40*kappa)
     # Amplitude loss must be O(eps_state^2) to bound FULL state error, including garbage.
     tol = eps_state**2/128
     k = erfcinv(tol/4)/threshold
     target = lambda x: (1-tol/4)*erf(k*x)
-    p, info = odd_interpolant(target, int(2*k)+1, tol, threshold, lambda x: np.ones_like(x))
-    angles, chk = verified_qsvt_angles(p)
+    p, info = odd_interpolant(target, int(2*k)+1, tol, threshold, lambda x: np.ones_like(x), max_degree=max_degree)
+    angles, chk = phase_angles(p, phase_backend, cache_dir)
     return p, np.asarray(angles), dict(info, angle_error=chk['max_dev'],
+                                      phase_synthesis=chk,
                                       threshold_policy='theorem 1/(40*kappa)',
                                       full_state_error_bound=float(np.sqrt(2*tol)))
 
@@ -215,7 +217,17 @@ def query_accounting(N, s, M, degrees, shots):
                 readout_shots=shots, samples_per_elementary_oracle=M)
 
 
-def calibrate(N=4, s=2, kappa=2., gamma=.3, delta=.1, eps_state=.01, M=10**8, seed=42):
+def phase_angles(poly, backend='upstream', cache_dir=None):
+    if backend == 'upstream':
+        return verified_qsvt_angles(poly)
+    if backend == 'batched':
+        from .phase_cache import cached_verified_angles
+        return cached_verified_angles(poly, cache_dir)
+    raise ValueError(f'unknown phase backend: {backend}')
+
+
+def calibrate(N=4, s=2, kappa=2., gamma=.3, delta=.1, eps_state=.01, M=10**8, seed=42,
+              phase_backend='upstream', cache_dir=None, max_degree=4095):
     from .blockenc import sketched_block_encoding, d23_amplify
     from .polynomials import amplification_polynomial
     timings={}
@@ -228,7 +240,7 @@ def calibrate(N=4, s=2, kappa=2., gamma=.3, delta=.1, eps_state=.01, M=10**8, se
     be=timed('sparse_oracles',lambda: sketched_block_encoding(X,M,eps_target=eps_be))
     amp=timed('d23_shortcut',lambda:d23_amplify(be,eps=eps_be)); C=amp['block']
     pa=amplification_polynomial(s,eps=eps_be)
-    aa,qa=timed('d23_angles',lambda:verified_qsvt_angles(pa))
+    aa,qa=timed('d23_angles',lambda:phase_angles(pa,phase_backend,cache_dir))
     dc=timed('d23_dense',lambda:dense_stage(be['B'],pa,np.asarray(aa)))
     A,selector=augmented_selector(C,lam)
     ideal_A=np.vstack([X,np.sqrt(lam)*np.eye(N)])/np.sqrt(1+lam)
@@ -238,12 +250,12 @@ def calibrate(N=4, s=2, kappa=2., gamma=.3, delta=.1, eps_state=.01, M=10**8, se
     import jax.numpy as jnp
     ysketch,_=ref.qos.q_state_sketch_flat(jnp.asarray(y),M)
     bs=np.r_[np.asarray(ysketch),np.zeros(N)]
-    pinv,ai,pi=timed('inverse_polynomial_and_angles',lambda:inverse_polynomial(kappa,eps_state))
+    pinv,ai,pi=timed('inverse_polynomial_and_angles',lambda:inverse_polynomial(kappa,eps_state,phase_backend,cache_dir,max_degree))
     T=timed('inverse_shortcut',lambda:singular_value_transform(A.conj().T,pinv))
     invdense=timed('inverse_dense',lambda:dense_stage(A.conj().T,pinv,ai))
     z=T@bs
     target_z=lstsq/(2*kappa)
-    fp,af,pf=timed('fixed_point_polynomial_and_angles',lambda:fixed_point_polynomial(kappa,eps_state))
+    fp,af,pf=timed('fixed_point_polynomial_and_angles',lambda:fixed_point_polynomial(kappa,eps_state,phase_backend,cache_dir,max_degree))
     a=float(np.linalg.norm(z))
     if a < pf['interval_min'] or a>1:
         raise RuntimeError('amplification success amplitude outside verified interval')
@@ -284,6 +296,7 @@ def calibrate(N=4, s=2, kappa=2., gamma=.3, delta=.1, eps_state=.01, M=10**8, se
     degrees=dict(sign=be['sign_degree'],d23=int(pa.degree()),inverse=int(pinv.degree()),fixed_point=int(fp.degree()))
     resources=query_accounting(N,s,M,degrees,shots)
     return dict(**meta,delta=delta,eps_target=eps_state,eps_BE=eps_be,M=M,degrees=degrees,
+                phase_backend=phase_backend,max_degree=max_degree,d23_phase_synthesis=qa,
                 inverse=pi,fixed_point=pf,d23_angle_error=qa['max_dev'],gates=gates,
                 success_amplitude_before_fixed_point=a,success_norm_after_fixed_point=goodnorm,
                 p_zero=pzero,ideal_p_zero=ideal_pzero,mean_signal=mean,
