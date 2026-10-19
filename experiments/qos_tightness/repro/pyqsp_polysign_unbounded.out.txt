@@ -1,0 +1,13 @@
+python 3.13.9 | numpy 2.3.5 | scipy 1.16.3 | pyqsp 0.2.0
+control s=8: degree=101 threshold=0.07392 delta=27.06
+  max|P| dense grid = 0.999900 at x=-0.09992; multi-start = 0.999900 at x=-0.09992  -> bounded
+  sym_qsp: iterations=12 final err=5.919e-15 converged=True
+  max |QSP response - P| on [-1,1] = 8.993e-15
+s=16: degree=195 threshold=0.03808 delta=52.52
+  max|P| dense grid = 1.000640 at x=-0.05192; multi-start = 1.000640 at x=-0.05192  -> UNBOUNDED (>1)
+  sym_qsp: iterations=100 final err=3.645e+00 converged=False
+  max |QSP response - P| on [-1,1] = 1.897e+00
+s=32: degree=383 threshold=0.01933 delta=103.45
+  max|P| dense grid = 1.001156 at x=-0.02647; multi-start = 1.001156 at x=-0.02647  -> UNBOUNDED (>1)
+  sym_qsp: iterations=100 final err=5.196e+00 converged=False
+  max |QSP response - P| on [-1,1] = 1.981e+00
