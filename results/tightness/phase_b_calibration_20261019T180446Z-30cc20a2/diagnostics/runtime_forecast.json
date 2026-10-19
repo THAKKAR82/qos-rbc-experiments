@@ -1,0 +1,138 @@
+{
+  "unique_configs": 13,
+  "unique_phase_kernels": 13,
+  "evaluations": 1040,
+  "phase_kernel_estimates": [
+    {
+      "kappa": 2.0,
+      "eps_solver": 0.001,
+      "estimated_degree": 3673.0,
+      "quadratic_seconds": 1087.2292449565646,
+      "cubic_seconds": 1763.0874246028532,
+      "exceeds_current_degree_cap": false
+    },
+    {
+      "kappa": 2.0,
+      "eps_solver": 0.008333333333333333,
+      "estimated_degree": 2376.4871944350557,
+      "quadratic_seconds": 455.1454714943959,
+      "cubic_seconds": 477.5485141772793,
+      "exceeds_current_degree_cap": false
+    },
+    {
+      "kappa": 4.0,
+      "eps_solver": 0.0008333333333333334,
+      "estimated_degree": 7568.974388870112,
+      "quadratic_seconds": 4616.9305372751305,
+      "cubic_seconds": 15428.445471005647,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 4.0,
+      "eps_solver": 0.001,
+      "estimated_degree": 7346.0,
+      "quadratic_seconds": 4348.916979826258,
+      "cubic_seconds": 14104.699396822825,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 4.0,
+      "eps_solver": 0.0025,
+      "estimated_degree": 6225.400935579542,
+      "quadratic_seconds": 3123.301590332642,
+      "cubic_seconds": 8584.461210840573,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 4.0,
+      "eps_solver": 0.004166666666666667,
+      "estimated_degree": 5600.674856659883,
+      "quadratic_seconds": 2527.900585989314,
+      "cubic_seconds": 6250.750221671584,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 4.0,
+      "eps_solver": 0.005892556509887896,
+      "estimated_degree": 5176.824622764997,
+      "quadratic_seconds": 2159.7633842942178,
+      "cubic_seconds": 4936.298572697822,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 4.0,
+      "eps_solver": 0.008333333333333333,
+      "estimated_degree": 4752.974388870111,
+      "quadratic_seconds": 1820.5818859775836,
+      "cubic_seconds": 3820.3881134182343,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 4.0,
+      "eps_solver": 0.01,
+      "estimated_degree": 4530.0,
+      "quadratic_seconds": 1653.7721466645598,
+      "cubic_seconds": 3307.5442933291197,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 8.0,
+      "eps_solver": 0.001,
+      "estimated_degree": 14692.0,
+      "quadratic_seconds": 17395.667919305033,
+      "cubic_seconds": 112837.5951745826,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 8.0,
+      "eps_solver": 0.008333333333333333,
+      "estimated_degree": 9505.948777740223,
+      "quadratic_seconds": 7282.3275439103345,
+      "cubic_seconds": 30563.104907345874,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 16.0,
+      "eps_solver": 0.001,
+      "estimated_degree": 29384.0,
+      "quadratic_seconds": 69582.67167722013,
+      "cubic_seconds": 902700.7613966608,
+      "exceeds_current_degree_cap": true
+    },
+    {
+      "kappa": 16.0,
+      "eps_solver": 0.008333333333333333,
+      "estimated_degree": 19011.897555480446,
+      "quadratic_seconds": 29129.310175641338,
+      "cubic_seconds": 244504.839258767,
+      "exceeds_current_degree_cap": true
+    }
+  ],
+  "setup_hours_quadratic": 40.32875531746875,
+  "setup_hours_cubic": 374.799867765534,
+  "oracle_build_proxy_hours": 0.5993775208610006,
+  "oracle_median_seconds": {
+    "2": 0.25035935395862907,
+    "4": 0.8871737709268928,
+    "8": 3.142850354546681,
+    "16": 14.707041020970792
+  },
+  "assumptions": [
+    "single process; no implementation optimization",
+    "phase setup cached once per kappa/actual-solver-epsilon pair",
+    "degree interpolated from two kappa=2 polynomial-only preflights; scales linearly with kappa",
+    "phase time scales as degree squared or cubed, based on loop/Jacobian and solve costs",
+    "oracle timings borrowed from frozen N64 phase (a), fixed primitive epsilon=1e-4",
+    "not a confidence interval; unsupported degrees exceed current cap; no measured large-kappa phases"
+  ],
+  "missing_costs": [
+    "reusable Clifford shadows",
+    "explicit fresh-sample nested circuits",
+    "higher precision sparse oracles",
+    "inverse polynomial phase setup outside calibration",
+    "N128 spot checks",
+    "CFPB toys",
+    "adaptive grid refinements"
+  ],
+  "full_phase_total_runtime": "not yet estimable as a validated finite bound; mandatory paths missing"
+}

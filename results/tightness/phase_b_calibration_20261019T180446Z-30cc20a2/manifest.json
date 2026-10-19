@@ -1,0 +1,56 @@
+{
+  "arguments": {
+    "M": 100000000,
+    "N": 4,
+    "append_ledger": true,
+    "eps": 0.01,
+    "kappa": 2.0,
+    "s": 2
+  },
+  "artifacts_sha256": {
+    "correctness.csv": "be29a03cc4aabc4372120d79fc0e8a1d90d135eabb5e133a66c3b6fd95b07956",
+    "ledger_rows.csv": "d02a3e8dd2ea53e2badc92e29d682bbddac12fbf6788eaa89424a0385afb3202",
+    "result.json": "b9aef1466a0c80cd28bcbbfb17a316a8c1fa919e6f6ebe896f99d579858b82cf",
+    "source_phase_b_prototype.py": "dd4328592df1a13f0d09563aafbc87940fdaca6151f125d6f388bc6c4e15b608",
+    "source_run_phase_b_calibration.py": "74e2577aa68fe4073e66189e3734a3d8dccb0f5a7f602d762c91d2ca53e55e90",
+    "source_snapshot_manifest.json": "8d4c12bda75ba6c0319844e08b3b765dc0cb3485821cc433ddda761f333dac05",
+    "stage_timings.csv": "3f665fe51e59a4156d4cad4f2f6ac008edc15e5ec5dcde8aba46781d98ae2af0"
+  },
+  "code_sha256": {
+    "experiments/qos_tightness/qostight/__init__.py": "a9244f0a38e854ca10ac191ade6216a181db96b1cce9786004f65b161ec9f1ba",
+    "experiments/qos_tightness/qostight/accounting.py": "0ea2357394e9762c977fd9fb577906851e6d3ab616f8073be8e757f69712e526",
+    "experiments/qos_tightness/qostight/blockenc.py": "c1b0be993b0dd471967d766f775cd7d64971afd6fd885f0c91094e8cbbdc0fbb",
+    "experiments/qos_tightness/qostight/env.py": "3a3918c77bc0d03cc76e125402365f0ac94f5faa171ac7a1218ed575925f5ced",
+    "experiments/qos_tightness/qostight/matrices.py": "c61f9c36d7907263eb23d9112914676569b9ab0e635f316e47bca1d1eaa6c764",
+    "experiments/qos_tightness/qostight/n_check.py": "7526267702ef6fd8a3d70dae48d335b0c2bd97e6d80f545859f1683e3ff7a919",
+    "experiments/qos_tightness/qostight/phase1.py": "f3340bf3ec04b698c1f82606d8221210fd79f03434667ca097ef3a9b4540544e",
+    "experiments/qos_tightness/qostight/phase_a.py": "82fdef692a9f00e6390d82d45c45687b5b445a2c0d27b1116f79d4d86b52e771",
+    "experiments/qos_tightness/qostight/phase_b_prototype.py": "dd4328592df1a13f0d09563aafbc87940fdaca6151f125d6f388bc6c4e15b608",
+    "experiments/qos_tightness/qostight/polynomials.py": "1bc5b4658d16ead2990176f2ae5b72cb5519f00b5f1d4a8cc3cbe1345d1356c7",
+    "experiments/qos_tightness/qostight/qsvt_tools.py": "2b4ccf9ff1bd46399756478a537a664b96d25f905ee6ce0435d9b06cc594a8d1",
+    "experiments/qos_tightness/qostight/resources.py": "87bea1f40ad60b6bfc7f8f0d7454047d361cbe741c36f15df363bd7cbd4f541f",
+    "experiments/qos_tightness/qostight/run_phase1.py": "97ffb9f5e231de5b40495206e3071c716f3310ad4edaa1c9d2f55e0795d6af61",
+    "experiments/qos_tightness/qostight/run_phase_b_calibration.py": "74e2577aa68fe4073e66189e3734a3d8dccb0f5a7f602d762c91d2ca53e55e90"
+  },
+  "date_utc": "2026-10-19T18:04:46.841224+00:00",
+  "git_commit": "aa252fa79f4d6795b5e8133a600baabea5eab50d",
+  "git_dirty_at_start": true,
+  "interpretation": "simulation (expected-unitary QOS, reference convention)",
+  "ledger_appended": true,
+  "lock_sha256": "85df24f7a39d90ca1f6b7e37c6ddb9fa6adcba4e167e8629a7557dd022f1c2be",
+  "peak_rss_bytes": 853721088,
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "reference_commit": "a3fe8d6fe777750749f5e90131180e016088bdaf",
+  "run_id": "20261019T180446Z-30cc20a2",
+  "runtime_seconds": 441.5427796249278,
+  "scope": "one fixed-test correctness/calibration instance; no scaling sweep",
+  "status": "completed",
+  "versions": {
+    "jax": "0.8.1",
+    "numpy": "2.3.5",
+    "psutil": "7.2.2",
+    "pyqsp": "0.2.0",
+    "scipy": "1.16.3"
+  }
+}

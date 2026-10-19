@@ -1,0 +1,86 @@
+{
+  "rows": [
+    {
+      "kappa": 2,
+      "eps_state": 0.01,
+      "starting_degree": 589,
+      "phase_finding_run": false,
+      "degree": 2265,
+      "max_abs_grid": 0.9999998120019089,
+      "interval_error": 3.831442267898666e-07,
+      "interval_min": 0.0125,
+      "tolerance": 7.8125e-07,
+      "grid_points": 65537,
+      "status": "polynomial grid checks passed; angles not generated",
+      "seconds": 0.6932870419695973
+    },
+    {
+      "kappa": 4,
+      "eps_state": 0.01,
+      "starting_degree": 1179,
+      "phase_finding_run": false,
+      "status": "no bounded polynomial by degree 4095: error=1.897510321402507e-05, peak=1.0000189801156905",
+      "seconds": 0.9291053751949221
+    },
+    {
+      "kappa": 8,
+      "eps_state": 0.01,
+      "starting_degree": 2355,
+      "phase_finding_run": false,
+      "status": "no bounded polynomial by degree 4095: error=0.012478217777945, peak=1.0149969547048139",
+      "seconds": 0.6291647499892861
+    },
+    {
+      "kappa": 16,
+      "eps_state": 0.01,
+      "starting_degree": 4711,
+      "phase_finding_run": false,
+      "status": "starting degree 4711 exceeds prototype cap 4095",
+      "seconds": 0.0016335840336978436
+    },
+    {
+      "kappa": 2,
+      "eps_state": 0.001,
+      "starting_degree": 681,
+      "phase_finding_run": false,
+      "degree": 3673,
+      "max_abs_grid": 0.9999999980563988,
+      "interval_error": 3.906172274525943e-09,
+      "interval_min": 0.0125,
+      "tolerance": 7.8125e-09,
+      "grid_points": 65537,
+      "status": "polynomial grid checks passed; angles not generated",
+      "seconds": 1.378504249965772
+    },
+    {
+      "kappa": 4,
+      "eps_state": 0.001,
+      "starting_degree": 1359,
+      "phase_finding_run": false,
+      "status": "no bounded polynomial by degree 4095: error=1.879133239013342e-05, peak=1.0000195947522887",
+      "seconds": 1.177642040885985
+    },
+    {
+      "kappa": 8,
+      "eps_state": 0.001,
+      "starting_degree": 2717,
+      "phase_finding_run": false,
+      "status": "no bounded polynomial by degree 4095: error=0.012437419231478009, peak=1.0149436879489802",
+      "seconds": 0.7456045418512076
+    },
+    {
+      "kappa": 16,
+      "eps_state": 0.001,
+      "starting_degree": 5433,
+      "phase_finding_run": false,
+      "status": "starting degree 5433 exceeds prototype cap 4095",
+      "seconds": 0.0016428339295089245
+    }
+  ],
+  "memory": {
+    "peak_rss_bytes": 624590848,
+    "gate_violation": null,
+    "seconds": 5.55663274996914
+  },
+  "interpretation": "numerical polynomial preflight; not a scaling sweep"
+}

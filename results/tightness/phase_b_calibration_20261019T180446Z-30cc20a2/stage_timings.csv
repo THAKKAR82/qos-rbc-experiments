@@ -1,0 +1,11 @@
+stage,seconds
+sparse_oracles,19.34409812488593
+d23_shortcut,0.0022380000445991755
+d23_angles,0.28570866701193154
+d23_dense,0.39869012497365475
+inverse_polynomial_and_angles,1.2345223329029977
+inverse_shortcut,0.005358416819944978
+inverse_dense,0.5384206669405103
+fixed_point_polynomial_and_angles,413.44303666613996
+fixed_point_shortcut,0.007667833939194679
+fixed_point_dense,0.3759050420485437

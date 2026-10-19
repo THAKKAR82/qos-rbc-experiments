@@ -1,0 +1,10 @@
+{
+  "experiments/qos_tightness/qostight/phase_b_prototype.py": {
+    "snapshot": "source_phase_b_prototype.py",
+    "sha256": "dd4328592df1a13f0d09563aafbc87940fdaca6151f125d6f388bc6c4e15b608"
+  },
+  "experiments/qos_tightness/qostight/run_phase_b_calibration.py": {
+    "snapshot": "source_run_phase_b_calibration.py",
+    "sha256": "74e2577aa68fe4073e66189e3734a3d8dccb0f5a7f602d762c91d2ca53e55e90"
+  }
+}

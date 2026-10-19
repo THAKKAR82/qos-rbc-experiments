@@ -59,6 +59,12 @@ either the published or matched N = 64 baseline. Phase (b) has not started.
 
 ## Proof-derived exponents (comparison targets)
 
+Phase-(b) plan/calibration gate completed 2026-10-19: see
+[detailed plan](PHASE_B_PLAN.md) and [calibration/approval report](PHASE_B_CALIBRATION.md).
+The tiny fixed-test pipeline passes; full sweeps remain unapproved and unready.
+Conservative phase finding exceeds the three-hour budget in conditional forecasts;
+verified explicit sampling, reusable Clifford shadows and nested accounting remain gates.
+
 | Component | Source | Dependence |
 |---|---|---|
 | Sparse index oracle | Lemma D.21 | Õ(R N s³/ε) |

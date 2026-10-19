@@ -1,0 +1,16 @@
+{
+  "artifacts_sha256": {
+    "calibration.png": "570450bbb3d4a1df226e72772b49b3354c5651e21b6bdb7fac9192dc61717894",
+    "degree_preflight.json": "b28c6aba41db282e10249ddeba71c3af445ba3fb5c53562bb9c524cff74f5b18",
+    "degree_preflight.png": "6c2967ddc233c355f6eabe2eaa20e475718d0332affcf3866f84557e6360573e",
+    "phase_kernel_forecast.csv": "38ec8ef921591b445e434c53992c2bc8af6fe199d00705342ece8ede50e503d3",
+    "runtime_forecast.json": "642c328ff11c8ce5ffe04e496efcdf80881bbb642da7a90f6018eb0aed92d836"
+  },
+  "calibration_manifest_sha256": "c59f76f01feb9bc6e7ccec249fd30e3e41d69bb8e8fdb2d4df7a8b18ed178790",
+  "code_sha256": {
+    "experiments/qos_tightness/qostight/phase_b_diagnostics.py": "4af21b386420d58769a7fbc9575ee412138dcbe351f559360e55982a212ef3a4",
+    "experiments/qos_tightness/qostight/phase_b_prototype.py": "da8d1374fc9c73487c966b34a821f666e6ebc2591aab695842cc91729fac8157"
+  },
+  "paper_html_sha256": "6b2005ce897658ed4d1d73db15954792425823404675fe4b68802356d49cc1b1",
+  "paper_url": "https://arxiv.org/html/2604.07639v2"
+}
