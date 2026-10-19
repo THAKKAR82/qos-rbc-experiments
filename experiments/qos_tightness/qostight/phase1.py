@@ -23,6 +23,7 @@ def calibrate_one(N, s, unit_num_samples, poly_eps=1e-4, seed=42):
     return {"status": "ok" if m["gate_violation"] is None else "memory_gate", "N": N, "D": N, "s": s,
             "unit_num_samples": int(unit_num_samples), "index_oracle_dim": N * s * N,
             "sign_degree": be["sign_degree"], "amplification_degree": amp["degree"],
+            "sign_method": be["sign_method"], "sign_eps": be["sign_info"]["row_index"]["eps"],
             "seconds": m["seconds"], "peak_rss_bytes": int(m["peak_rss_bytes"]),
             "be_error_spec": spec(amp["block"] - A / 2), "gate_violation": m["gate_violation"]}
 
@@ -80,3 +81,19 @@ def dense_crosscheck(N, s, seed=42, unit_num_samples=10**6, lam=0.3):
                  input="sketched A/s (M=%g)" % unit_num_samples, **r1),
             dict(N=N, s=s, polynomial="1/x pseudo-inverse", degree=int(P_inv.degree()), kappa=kappa,
                  inverse_scale=scale, input=f"0.999 * A_lambda (lambda={lam})", **r2)]
+
+
+def a2prime_comparison(N, s, unit_num_samples=10**10, degree=101, seed=42):
+    """Fixed sign degree comparisons: (i) reference pyqsp path, (ii) our verified-bounded polynomial."""
+    A = circulant_sparse(N, N, s, seed=seed)
+    rows = []
+    for method in ("pyqsp", "verified"):
+        be = sketched_block_encoding(A, unit_num_samples, sign_degree=degree, sign_method=method)
+        info = be["sign_info"]["row_index"]
+        rows.append({"N": N, "s": s, "unit_num_samples": int(unit_num_samples), "sign_degree": be["sign_degree"],
+                     "comparison": info["comparison"], "sign_method": be["sign_method"],
+                     "angles_verified": info["verified"], "angle_max_dev": info["max_dev"],
+                     "sign_max_abs": info.get("max_abs"), "sign_achieved_error": info["achieved_error"],
+                     "be_error_spec_A_over_s": spec(be["B"] - A / s),
+                     "d23_error_spec": spec(d23_amplify(be)["block"] - A / 2)})
+    return rows
