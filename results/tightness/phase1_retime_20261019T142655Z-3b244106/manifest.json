@@ -1,0 +1,55 @@
+{
+  "artifacts_sha256": {
+    "calibration.csv": "dcd2068633f226521c0927f81be00836db044cde29fa11a70adb0a0ad08f81a3",
+    "phase_a_budget.json": "e0811b9a07660274d9714c343cda7bce462e01fe17ecf09b153974997db5b214"
+  },
+  "code_sha256": {
+    "experiments/qos_tightness/qostight/__init__.py": "a9244f0a38e854ca10ac191ade6216a181db96b1cce9786004f65b161ec9f1ba",
+    "experiments/qos_tightness/qostight/accounting.py": "0ea2357394e9762c977fd9fb577906851e6d3ab616f8073be8e757f69712e526",
+    "experiments/qos_tightness/qostight/blockenc.py": "6be90adc72a4afce092879dad89601dcdb00c4539c80d626a97c67eba412cc1e",
+    "experiments/qos_tightness/qostight/env.py": "3a3918c77bc0d03cc76e125402365f0ac94f5faa171ac7a1218ed575925f5ced",
+    "experiments/qos_tightness/qostight/matrices.py": "c61f9c36d7907263eb23d9112914676569b9ab0e635f316e47bca1d1eaa6c764",
+    "experiments/qos_tightness/qostight/phase1.py": "f3340bf3ec04b698c1f82606d8221210fd79f03434667ca097ef3a9b4540544e",
+    "experiments/qos_tightness/qostight/polynomials.py": "1bc5b4658d16ead2990176f2ae5b72cb5519f00b5f1d4a8cc3cbe1345d1356c7",
+    "experiments/qos_tightness/qostight/qsvt_tools.py": "2b4ccf9ff1bd46399756478a537a664b96d25f905ee6ce0435d9b06cc594a8d1",
+    "experiments/qos_tightness/qostight/resources.py": "87bea1f40ad60b6bfc7f8f0d7454047d361cbe741c36f15df363bd7cbd4f541f",
+    "experiments/qos_tightness/qostight/run_phase1.py": "97ffb9f5e231de5b40495206e3071c716f3310ad4edaa1c9d2f55e0795d6af61"
+  },
+  "date_utc": "2026-10-19T14:26:55.680284+00:00",
+  "git_commit": "087327255ede8d64b31437389186938712470073",
+  "interpretation": "simulation (expected-unitary QOS, reference convention)",
+  "lock_sha256": "85df24f7a39d90ca1f6b7e37c6ddb9fa6adcba4e167e8629a7557dd022f1c2be",
+  "pairs": [
+    [
+      64,
+      2
+    ],
+    [
+      64,
+      4
+    ],
+    [
+      64,
+      8
+    ],
+    [
+      64,
+      16
+    ],
+    [
+      64,
+      32
+    ],
+    [
+      128,
+      32
+    ]
+  ],
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "reason": "re-timing after sign fix; the revalidation run's calibration was skipped by the memory gate because its parent process held JAX state",
+  "reference_commit": "a3fe8d6fe777750749f5e90131180e016088bdaf",
+  "run_id": "20261019T142655Z-3b244106",
+  "status": "completed",
+  "unit_num_samples": 1000000
+}

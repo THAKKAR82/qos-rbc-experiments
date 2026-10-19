@@ -85,6 +85,7 @@ def run_calibration(Ns, ss, M, timeout, pairs=None):
 
 PHASE_A_PLAN = dict(N=64, s_values=(2, 4, 8, 16, 32), M_values=12, seeds=(42, 123, 456, 789, 2026),
                     a2prime_degree=101)
+RETIME_PAIRS = [(64, s) for s in PHASE_A_PLAN["s_values"]] + [(128, 32)]
 TIME_BUDGET_HOURS = 3.0  # step-2 plan: (a) ~0.5-1 h index oracle + 1-2 h block encoding
 
 
@@ -99,6 +100,30 @@ def phase_a_budget(calibration):
                 note="a2 (index oracle) and a3 (block encoding) errors come from the same builds; a1 (element "
                      "oracle) is negligible; a2' (i)/(ii) at degree 101 add ~2 x the s<=8 build cost per s",
                 budget_hours=TIME_BUDGET_HOURS, within_budget=bool(not missing and primary / 3600 <= TIME_BUDGET_HOURS))
+
+
+def retime(args):
+    """Calibration-only run from a light parent (no JAX in this process), for the phase (a) budget."""
+    now = datetime.now(timezone.utc)
+    run_id = now.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
+    out = REPO / "results" / "tightness" / f"phase1_retime_{run_id}"
+    out.mkdir(parents=True, exist_ok=False)
+    code = sorted(str(f.relative_to(REPO)) for f in (HERE / "qostight").glob("*.py"))
+    manifest = dict(run_id=run_id, date_utc=now.isoformat(), interpretation=INTERPRETATION,
+                    reason="re-timing after sign fix; the revalidation run's calibration was skipped by the "
+                           "memory gate because its parent process held JAX state",
+                    git_commit=git_commit(), reference_commit=REFERENCE_COMMIT, python=sys.version,
+                    platform=platform.platform(), lock_sha256=_sha(HERE / "requirements-lock.txt"),
+                    code_sha256={c: _sha(REPO / c) for c in code}, pairs=RETIME_PAIRS, unit_num_samples=10**6,
+                    status="running")
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True))
+    calib = run_calibration(None, None, M=10**6, timeout=args.timeout, pairs=RETIME_PAIRS)
+    _write_csv(out / "calibration.csv", calib)
+    (out / "phase_a_budget.json").write_text(json.dumps(phase_a_budget(calib), indent=2, sort_keys=True))
+    manifest.update(status="completed", artifacts_sha256={f.name: _sha(f) for f in sorted(out.iterdir())
+                                                           if f.name != "manifest.json"})
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True))
+    print("done", out.relative_to(REPO), flush=True)
 
 
 def revalidate(args):
@@ -189,6 +214,8 @@ def main(argv=None):
     rev = sub.add_parser("revalidate")
     rev.add_argument("--timeout", type=int, default=1800)
     rev.add_argument("--append-ledger", action="store_true")
+    ret = sub.add_parser("retime")
+    ret.add_argument("--timeout", type=int, default=1800)
     args = p.parse_args(argv)
     require_qos_ref_venv()
     if args.cmd == "calibrate-one":
@@ -197,6 +224,8 @@ def main(argv=None):
         return
     if args.cmd == "revalidate":
         return revalidate(args)
+    if args.cmd == "retime":
+        return retime(args)
     from .phase1 import d23_validation, dense_crosscheck
     ref = load_reference()
     now = datetime.now(timezone.utc)

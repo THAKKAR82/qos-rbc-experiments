@@ -1,0 +1,7 @@
+D,N,amplification_degree,available_bytes,be_error_spec,gate_violation,index_oracle_dim,peak_rss_bytes,s,seconds,sign_degree,sign_eps,sign_method,status,unit_num_samples,wall_seconds_incl_startup
+64,64,49,,0.005345729938786772,,8192,483229696,2,5.0781837499234825,69,5.428681023790647e-06,verified Chebyshev erf (primary),ok,1000000,5.813133707968518
+64,64,97,,0.014092588213687663,,16384,470876160,4,7.4175252499990165,143,2.7143405118953237e-06,verified Chebyshev erf (primary),ok,1000000,8.08649458293803
+64,64,,4171808768,,,,,8,,,,,skipped: memory gate before stage,,
+64,64,,4171808768,,,,,16,,,,,skipped: memory gate before stage,,
+64,64,,4171808768,,,,,32,,,,,skipped: memory gate before stage,,
+128,128,,4171808768,,,,,32,,,,,skipped: memory gate before stage,,

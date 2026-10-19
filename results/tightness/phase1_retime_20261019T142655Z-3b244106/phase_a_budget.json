@@ -1,0 +1,34 @@
+{
+  "budget_hours": 3.0,
+  "builds_per_s": 60,
+  "missing_s": [],
+  "note": "a2 (index oracle) and a3 (block encoding) errors come from the same builds; a1 (element oracle) is negligible; a2' (i)/(ii) at degree 101 add ~2 x the s<=8 build cost per s",
+  "per_build_seconds_N64": {
+    "2": 4.6274851250927895,
+    "4": 7.023925250163302,
+    "8": 12.91959945904091,
+    "16": 49.388630707981065,
+    "32": 187.5950168329291
+  },
+  "plan": {
+    "M_values": 12,
+    "N": 64,
+    "a2prime_degree": 101,
+    "s_values": [
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
+    "seeds": [
+      42,
+      123,
+      456,
+      789,
+      2026
+    ]
+  },
+  "primary_sweep_hours": 4.359244289586786,
+  "within_budget": false
+}
