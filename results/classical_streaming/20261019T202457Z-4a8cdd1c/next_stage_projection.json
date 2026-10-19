@@ -1,0 +1,49 @@
+{
+  "kind": "calculated runtime scenarios, not measurements of proposed experiments",
+  "control": {
+    "tasks": 2,
+    "orders": 2,
+    "step_sizes": [
+      0.1,
+      0.3,
+      1.0
+    ],
+    "seeds": [
+      42
+    ],
+    "passes": 5,
+    "trajectories": 12,
+    "training_presentations": 621720,
+    "validation_presentations": 188460,
+    "low_observed_seconds": 188.6808624780255,
+    "median_observed_seconds": 200.328690319483,
+    "high_observed_seconds": 216.03222602001895,
+    "recommended_cap_seconds": 600
+  },
+  "reduced_final": {
+    "tasks": 2,
+    "methods": 4,
+    "representations": 2,
+    "orders": 2,
+    "budgets_KiB": [
+      16,
+      64,
+      128
+    ],
+    "evaluation_seeds": [
+      42,
+      123,
+      456,
+      789,
+      2026
+    ],
+    "initial_tuning_candidates_per_cell": 24,
+    "trajectories": 3168,
+    "continuation_launches": 384,
+    "training_presentations": 228792960,
+    "low_observed_seconds": 185088.80440543994,
+    "median_observed_seconds": 190551.3178389757,
+    "high_observed_seconds": 200927.98648143746
+  },
+  "assumptions": "Same serial Python implementation and instrumentation. Control rates use full observed A hashing range as a proxy for unprojected SGD. Reduced-grid rates use the observed 16/128/512 KiB range within each matched task/method/representation/order; 64 KiB is not measured. No confidence interval or guarantee. Additional schedules/depths, bootstrap, provenance management and implementation work are not included. Require new approval."
+}

@@ -1,0 +1,45 @@
+{
+  "correctness_basis": "pre-run independent update tests; frozen feature and Ridge reference gates",
+  "examples_processed": 7265,
+  "is_part_of_96_grid": true,
+  "peak_model_state_bytes": 15865,
+  "peak_rss_bytes": 195002368,
+  "primary_validation": {
+    "N": 1588,
+    "absent_classes": [],
+    "accuracy": 0.8822418136020151,
+    "balanced_accuracy": 0.88235770087515,
+    "confusion": [
+      [
+        705,
+        101
+      ],
+      [
+        86,
+        696
+      ]
+    ],
+    "macro_f1": 0.8822380310136604,
+    "per_class": [
+      {
+        "f1": 0.8829054477144647,
+        "label": -1,
+        "precision": 0.8912768647281921,
+        "recall": 0.8746898263027295,
+        "support": 806
+      },
+      {
+        "f1": 0.8815706143128562,
+        "label": 1,
+        "precision": 0.8732747804265998,
+        "recall": 0.8900255754475703,
+        "support": 782
+      }
+    ]
+  },
+  "status": "passed",
+  "throughput": 4372.732263915224,
+  "total_persistent_bytes": 8245076,
+  "training_seconds": 1.6614326150156558,
+  "trajectory_id": "credit_vs_checking_A_frozen_hash_sgd_chronological_b16384_s42"
+}

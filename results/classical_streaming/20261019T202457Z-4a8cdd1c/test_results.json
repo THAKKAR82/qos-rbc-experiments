@@ -1,0 +1,30 @@
+{
+  "new_correctness_tests": 25,
+  "existing_fast_tests": 177,
+  "bank_regression_tests": 9,
+  "total_distinct_tests": 211,
+  "failures": 0,
+  "pytest_warnings": 0,
+  "pip_check": "No broken requirements found",
+  "pip_warning": "Pip cache disabled because the user cache directory is not writable; dependencies were unchanged.",
+  "commands": [
+    {
+      "command": "env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider experiments/cfpb_streaming_state/tests tests --ignore=tests/test_regression.py",
+      "result": "200 passed in 4.75s; 177 existing and 23 then-current new tests"
+    },
+    {
+      "command": "env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_regression.py",
+      "result": "9 passed in 9.82s"
+    },
+    {
+      "command": "env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider experiments/cfpb_streaming_state/tests",
+      "result": "25 passed in 0.91s after compatibility/reporting tests were added"
+    },
+    {
+      "command": ".venv/bin/python -m pip check",
+      "result": "No broken requirements found"
+    }
+  ],
+  "bank_full_sweep": "Skipped: no shared scientific code, notebook, prior artifacts or dependency changes; new implementations remain isolated.",
+  "bank_numerical_scope": "Regression checks reproduce N=45211, D=51, nnz=723376, max row sparsity=16, reference resource estimate=41 exactly; ordinary Ridge accuracy 0.8995155858234207, ordinary Ridge balanced accuracy 0.6300640934600773, balanced Ridge balanced accuracy 0.8256193229214974, CSR JL endpoint ordinary accuracy 0.899537704823642 and balanced Ridge balanced accuracy 0.8256067994399695 pass rtol=0, atol=1e-8. Raw deltas are not logged by these tests. Full 80-row sweep was not rerun; saved artifacts and summaries are hash/regression checked."
+}

@@ -1,0 +1,38 @@
+{
+  "across_seed_uncertainty": "not estimable",
+  "additional_raw_scaled_equivalence_fits": 8,
+  "all_recorded_algorithm_states_fit": true,
+  "analyzer_sha256": "549745a4c6acf81a00673efe9823da5a275e03f54100f88faa85cc3e7de8b3ca",
+  "batch_reference_fits": 8,
+  "benchmark_wall_seconds": 1102.3818399906158,
+  "completed": 96,
+  "evaluation_seconds": 238.17251283978112,
+  "evaluation_seeds": [
+    42
+  ],
+  "frozen_artifacts_verified": 87,
+  "full_forecast": {
+    "complete_method_track_coverage": true,
+    "high_observed_days": 28.956709231674623,
+    "limitations": "Calculated extrapolation, not measured full benchmark; frozen two-task rates transferred to other tasks, budgets and multipass/HPO settings. No bootstrap/reference/tuning-management allowance. Range is not a confidence interval.",
+    "low_observed_days": 25.441493854399344,
+    "median_observed_days": 27.270913581936142,
+    "training_presentations": 2773630720,
+    "validation_presentations": 687029504,
+    "worker_starts": 47360
+  },
+  "k_star_grid": "not estimated: untuned one-seed diagnostic pilot",
+  "planned": 96,
+  "preservation_mismatches": [],
+  "process_peak_rss_bytes": 521682944,
+  "raw_data_or_model_cache_committed": false,
+  "status": "completed",
+  "status_counts": {
+    "completed": 96
+  },
+  "test_predictions": 0,
+  "training_presentations": 994752,
+  "training_seconds": 766.8474481196608,
+  "tuning_trajectories": 0,
+  "validation_presentations": 1005120
+}
