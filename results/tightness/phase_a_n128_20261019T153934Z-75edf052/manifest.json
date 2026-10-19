@@ -1,0 +1,151 @@
+{
+  "M_grid": [
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000,
+    10000000000,
+    100000000000
+  ],
+  "N": 128,
+  "artifacts_sha256": {
+    "a2prime_vs_s.csv": "8b57d1d66d680ab5980667dcaef2a3d2cbea5162f1a11126e33cb31629720692",
+    "alpha_fits.csv": "8c4f42efa362f8fe2c3f36a9d121a64146efb2ad72badb27f3ad90d224a7e32e",
+    "beta_fits.csv": "0139efd10f3bf10e7bf1fc29287fd0f41ae0ad65fa610f0bd5b5c30dc969cedf",
+    "ledger_rows.csv": "541457e310d8be0d070b111614f5b17aaa687bfadb5c7a6b3ad5eaa5e0e587c4",
+    "local_slopes.csv": "02dc77c967f49a5c2b4a4d3ca596aa351bd5f9d7096bebf07bb6c8f7cbf90aee",
+    "mstar.csv": "3669bd4937f5aa7c9f9a2242a0cb384840275d32f06bc045ad02cc8058c6f8e8",
+    "points.csv": "2c78ac6212bf98b993d8bc3ef51eb48efcdbde5cd1fe571ce09a39ba5cd12f33"
+  },
+  "bootstrap": {
+    "n": 2000,
+    "resample": "instances within s",
+    "seed": 42
+  },
+  "code_sha256": {
+    "experiments/qos_tightness/qostight/__init__.py": "a9244f0a38e854ca10ac191ade6216a181db96b1cce9786004f65b161ec9f1ba",
+    "experiments/qos_tightness/qostight/accounting.py": "0ea2357394e9762c977fd9fb577906851e6d3ab616f8073be8e757f69712e526",
+    "experiments/qos_tightness/qostight/blockenc.py": "c1b0be993b0dd471967d766f775cd7d64971afd6fd885f0c91094e8cbbdc0fbb",
+    "experiments/qos_tightness/qostight/env.py": "3a3918c77bc0d03cc76e125402365f0ac94f5faa171ac7a1218ed575925f5ced",
+    "experiments/qos_tightness/qostight/matrices.py": "c61f9c36d7907263eb23d9112914676569b9ab0e635f316e47bca1d1eaa6c764",
+    "experiments/qos_tightness/qostight/phase1.py": "f3340bf3ec04b698c1f82606d8221210fd79f03434667ca097ef3a9b4540544e",
+    "experiments/qos_tightness/qostight/phase_a.py": "82fdef692a9f00e6390d82d45c45687b5b445a2c0d27b1116f79d4d86b52e771",
+    "experiments/qos_tightness/qostight/polynomials.py": "1bc5b4658d16ead2990176f2ae5b72cb5519f00b5f1d4a8cc3cbe1345d1356c7",
+    "experiments/qos_tightness/qostight/qsvt_tools.py": "2b4ccf9ff1bd46399756478a537a664b96d25f905ee6ce0435d9b06cc594a8d1",
+    "experiments/qos_tightness/qostight/resources.py": "87bea1f40ad60b6bfc7f8f0d7454047d361cbe741c36f15df363bd7cbd4f541f",
+    "experiments/qos_tightness/qostight/run_phase1.py": "97ffb9f5e231de5b40495206e3071c716f3310ad4edaa1c9d2f55e0795d6af61"
+  },
+  "data_note": "synthetic circulant support: uniform row and column sparsity (ideal case), unlike real data whose s is set by heavy columns",
+  "date_utc": "2026-10-19T15:39:34.026175+00:00",
+  "eps_targets": [
+    0.01,
+    0.001
+  ],
+  "git_commit": "2b5554b2a9605c1a1333980cc3a6819a77f56acd",
+  "git_dirty_at_start": true,
+  "instances_note": "3 instances per s (N-dependence check)",
+  "interpretation": "simulation (expected-unitary QOS, reference convention)",
+  "ledger_appended": true,
+  "lock_sha256": "85df24f7a39d90ca1f6b7e37c6ddb9fa6adcba4e167e8629a7557dd022f1c2be",
+  "modes": {
+    "primary": "verified sign at D.23 precision; Theorem D.23 amplification"
+  },
+  "partest": null,
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "predictions": {
+    "d23": {
+      "alpha": 5.0,
+      "note": "Theorem D.23: O~(R N s^5 / eps); s-dependent polylog log^4(s log N / eps) divided out"
+    },
+    "element": {
+      "alpha": 1.0,
+      "note": "from the reference code: M ~ nnz/eps = N s/eps at fixed N (Lemma D.19 statement not read)"
+    },
+    "index": {
+      "alpha": 3.0,
+      "note": "Lemma D.21: O~(R N s^3 / eps); its polylog log^2 N log^2(log N/eps) is s-independent at fixed N"
+    },
+    "rescale_optimistic": {
+      "alpha": null,
+      "note": "comparison only (optimistic: reference convention); no theorem prediction"
+    }
+  },
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "reference_commit": "a3fe8d6fe777750749f5e90131180e016088bdaf",
+  "run_id": "20261019T153934Z-75edf052",
+  "s_values": [
+    2,
+    4,
+    8,
+    16
+  ],
+  "seeds_per_s": {
+    "16": [
+      42,
+      123,
+      456
+    ],
+    "2": [
+      42,
+      123,
+      456
+    ],
+    "4": [
+      42,
+      123,
+      456
+    ],
+    "8": [
+      42,
+      123,
+      456
+    ]
+  },
+  "stages": [
+    {
+      "mode": "primary",
+      "points": 24,
+      "return_codes": [
+        0,
+        0
+      ],
+      "s": 2,
+      "seconds": 32.57623641612008
+    },
+    {
+      "mode": "primary",
+      "points": 24,
+      "return_codes": [
+        0,
+        0
+      ],
+      "s": 4,
+      "seconds": 64.51636387500912
+    },
+    {
+      "mode": "primary",
+      "points": 24,
+      "return_codes": [
+        0,
+        0
+      ],
+      "s": 8,
+      "seconds": 174.97436549980193
+    },
+    {
+      "mode": "primary",
+      "points": 24,
+      "return_codes": [
+        0,
+        0
+      ],
+      "s": 16,
+      "seconds": 733.6602237077896
+    }
+  ],
+  "status": "completed",
+  "wall_seconds": 1005.7271894987207,
+  "workers": 2
+}

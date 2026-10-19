@@ -1,0 +1,97 @@
+M_star,eps,quantity,s,seed,status
+nan,0.01,element,2,42,below grid
+16489.096551400693,0.001,element,2,42,bracketed
+nan,0.01,element,2,123,below grid
+14485.36916991208,0.001,element,2,123,bracketed
+nan,0.01,element,2,456,below grid
+13892.580360750406,0.001,element,2,456,bracketed
+nan,0.01,element,4,42,below grid
+nan,0.001,element,4,42,below grid
+nan,0.01,element,4,123,below grid
+nan,0.001,element,4,123,below grid
+nan,0.01,element,4,456,below grid
+nan,0.001,element,4,456,below grid
+nan,0.01,element,8,42,below grid
+nan,0.001,element,8,42,below grid
+nan,0.01,element,8,123,below grid
+nan,0.001,element,8,123,below grid
+nan,0.01,element,8,456,below grid
+nan,0.001,element,8,456,below grid
+nan,0.01,element,16,42,below grid
+nan,0.001,element,16,42,below grid
+nan,0.01,element,16,123,below grid
+nan,0.001,element,16,123,below grid
+nan,0.01,element,16,456,below grid
+nan,0.001,element,16,456,below grid
+422073257.00509286,0.01,index,2,42,bracketed
+4346250718.35158,0.001,index,2,42,bracketed
+422073257.003103,0.01,index,2,123,bracketed
+4346250718.351564,0.001,index,2,123,bracketed
+422078533.34851646,0.01,index,2,456,bracketed
+4346256745.221626,0.001,index,2,456,bracketed
+2226914728.113663,0.01,index,4,42,bracketed
+22956639541.721928,0.001,index,4,42,bracketed
+2325197887.6058187,0.01,index,4,123,bracketed
+23969797498.15649,0.001,index,4,123,bracketed
+2325290016.5044613,0.01,index,4,456,bracketed
+23969892573.29499,0.001,index,4,456,bracketed
+8347160552.163013,0.01,index,8,42,bracketed
+85018940263.07767,0.001,index,8,42,bracketed
+8347177072.475686,0.01,index,8,123,bracketed
+84983340165.44528,0.001,index,8,123,bracketed
+8170137039.78923,0.01,index,8,456,bracketed
+83200213302.011,0.001,index,8,456,bracketed
+48193241485.64766,0.01,index,16,42,bracketed
+487165803475.7212,0.001,index,16,42,bracketed
+47681472001.08879,0.01,index,16,123,bracketed
+481956734993.1704,0.001,index,16,123,bracketed
+47681686384.04147,0.01,index,16,456,bracketed
+481956953419.3623,0.001,index,16,456,bracketed
+21385661690.848217,0.01,d23,2,42,bracketed
+223876202221.63962,0.001,d23,2,42,bracketed
+21841551863.88293,0.01,d23,2,123,bracketed
+228636103947.31732,0.001,d23,2,123,bracketed
+21530361176.015266,0.01,d23,2,456,bracketed
+225021282880.27744,0.001,d23,2,456,bracketed
+236616121857.20453,0.01,d23,4,42,bracketed
+2614983380795.296,0.001,d23,4,42,bracketed
+227602072370.85736,0.01,d23,4,123,bracketed
+2499676954120.9937,0.001,d23,4,123,bracketed
+214367506537.75327,0.01,d23,4,456,bracketed
+2294225754350.8315,0.001,d23,4,456,bracketed
+1579288554888.786,0.01,d23,8,42,bracketed
+16170791024559.781,0.001,d23,8,42,bracketed
+1608542748980.7202,0.01,d23,8,123,bracketed
+16540792546083.273,0.001,d23,8,123,bracketed
+1646175608857.4255,0.01,d23,8,456,bracketed
+16998435560067.104,0.001,d23,8,456,bracketed
+18492957599986.43,0.01,d23,16,42,bracketed
+188583680996393.12,0.001,d23,16,42,bracketed
+19469174434608.926,0.01,d23,16,123,bracketed
+197947731911206.78,0.001,d23,16,123,bracketed
+18082174146360.92,0.01,d23,16,456,bracketed
+183939076912977.03,0.001,d23,16,456,bracketed
+436442207.44105196,0.01,rescale_optimistic,2,42,bracketed
+4568915495.623489,0.001,rescale_optimistic,2,42,bracketed
+445746083.9445615,0.01,rescale_optimistic,2,123,bracketed
+4666057410.203105,0.001,rescale_optimistic,2,123,bracketed
+439395245.9412058,0.01,rescale_optimistic,2,456,bracketed
+4592283572.098089,0.001,rescale_optimistic,2,456,bracketed
+2426313210.3748784,0.01,rescale_optimistic,4,42,bracketed
+25021287387.934753,0.001,rescale_optimistic,4,42,bracketed
+2335415450.730329,0.01,rescale_optimistic,4,123,bracketed
+24047046475.66952,0.001,rescale_optimistic,4,123,bracketed
+2212165378.6597958,0.01,rescale_optimistic,4,456,bracketed
+22747577904.405003,0.001,rescale_optimistic,4,456,bracketed
+8183607033.263806,0.01,rescale_optimistic,8,42,bracketed
+84059279706.73053,0.001,rescale_optimistic,8,42,bracketed
+8334385533.354739,0.01,rescale_optimistic,8,123,bracketed
+85714939199.1576,0.001,rescale_optimistic,8,123,bracketed
+8525895031.778884,0.01,rescale_optimistic,8,456,bracketed
+87704818441.39893,0.001,rescale_optimistic,8,456,bracketed
+40167252249.419655,0.01,rescale_optimistic,16,42,bracketed
+413502892378.3335,0.001,rescale_optimistic,16,42,bracketed
+42283395714.36861,0.01,rescale_optimistic,16,123,bracketed
+434224260651.7072,0.001,rescale_optimistic,16,123,bracketed
+39274082437.39642,0.01,rescale_optimistic,16,456,bracketed
+403126399659.77673,0.001,rescale_optimistic,16,456,bracketed

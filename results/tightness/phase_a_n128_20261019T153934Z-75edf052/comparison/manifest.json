@@ -1,0 +1,20 @@
+{
+  "analysis_code_sha256": "7526267702ef6fd8a3d70dae48d335b0c2bd97e6d80f545859f1683e3ff7a919",
+  "artifacts_sha256": {
+    "N128_alpha_fits.csv": "8c4f42efa362f8fe2c3f36a9d121a64146efb2ad72badb27f3ad90d224a7e32e",
+    "N128_beta_fits.csv": "0139efd10f3bf10e7bf1fc29287fd0f41ae0ad65fa610f0bd5b5c30dc969cedf",
+    "N128_local_slopes.csv": "02dc77c967f49a5c2b4a4d3ca596aa351bd5f9d7096bebf07bb6c8f7cbf90aee",
+    "N128_mstar.csv": "3669bd4937f5aa7c9f9a2242a0cb384840275d32f06bc045ad02cc8058c6f8e8",
+    "N64_matched_alpha_fits.csv": "d2256b2f9e900360fa2436d9e3f3a216583bd037402eb32d7f0501739a34c3e4",
+    "N64_matched_beta_fits.csv": "979bad00030c070b28c0ef1c50018b8f6276090083000c8b317d8628ad111c72",
+    "N64_matched_local_slopes.csv": "3c870848b8b4dcc9d9b082652828f3cd4bf746fe7fffdb9558f6a154d0de3023",
+    "N64_matched_mstar.csv": "411c19917d13ccab1cf149198e75a4614fa545598598a320921d703166b7a415",
+    "alpha_comparison.csv": "028c0d1ce405ad42c0bec5dbb15358173318f91ff6a26d30b788e1fff614b60a"
+  },
+  "baseline_dir": "phase_a_20261019T145729Z-a1644ff3",
+  "baseline_manifest_sha256": "649648d8d769272b9c9d7d8cbd75ef3cb704511dc7a027407d17873c1a792f4c",
+  "interpretation": "simulation (expected-unitary QOS, reference convention)",
+  "matched_note": "N64 restricted to s=2,4,8,16 and seeds=42,123,456; no new N64 simulation",
+  "run_manifest_sha256": "b7542c30be32f78d7615fa1d6b4716dcb90cef69b94014740c387e64cacffb96",
+  "uncertainty_note": "95% bootstrap CIs resample instances within s; do not cover finite-grid, degree-search, or finite-size systematic error"
+}

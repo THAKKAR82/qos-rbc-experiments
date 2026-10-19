@@ -1,0 +1,97 @@
+M_star,eps,quantity,s,seed,status
+nan,0.01,element,2,42,below grid
+29077.96337356736,0.001,element,2,42,bracketed
+nan,0.01,element,2,123,below grid
+30320.30038375423,0.001,element,2,123,bracketed
+nan,0.01,element,2,456,below grid
+24915.98247269552,0.001,element,2,456,bracketed
+nan,0.01,element,4,42,below grid
+15165.982838792117,0.001,element,4,42,bracketed
+nan,0.01,element,4,123,below grid
+14320.505689434594,0.001,element,4,123,bracketed
+nan,0.01,element,4,456,below grid
+13319.15009908904,0.001,element,4,456,bracketed
+nan,0.01,element,8,42,below grid
+nan,0.001,element,8,42,below grid
+nan,0.01,element,8,123,below grid
+nan,0.001,element,8,123,below grid
+nan,0.01,element,8,456,below grid
+nan,0.001,element,8,456,below grid
+nan,0.01,element,16,42,below grid
+nan,0.001,element,16,42,below grid
+nan,0.01,element,16,123,below grid
+nan,0.001,element,16,123,below grid
+nan,0.01,element,16,456,below grid
+nan,0.001,element,16,456,below grid
+1158946579.714987,0.01,index,2,42,bracketed
+12215773217.37309,0.001,index,2,42,bracketed
+1158946579.6949682,0.01,index,2,123,bracketed
+12215773217.372873,0.001,index,2,123,bracketed
+1158960593.772739,0.01,index,2,456,bracketed
+12215788474.440136,0.001,index,2,456,bracketed
+6113761516.486719,0.01,index,4,42,bracketed
+62844880903.29176,0.001,index,4,42,bracketed
+6345341912.068816,0.01,index,4,123,bracketed
+65196442120.486855,0.001,index,4,123,bracketed
+6345513155.384701,0.01,index,4,456,bracketed
+65196612935.68314,0.001,index,4,456,bracketed
+22971707766.009438,0.01,index,8,42,bracketed
+233629833764.10736,0.001,index,8,42,bracketed
+22971315037.531506,0.01,index,8,123,bracketed
+233519899065.33142,0.001,index,8,123,bracketed
+22555864152.521782,0.01,index,8,456,bracketed
+229271579137.36346,0.001,index,8,456,bracketed
+130454880531.07701,0.01,index,16,42,bracketed
+1323959035756.9258,0.001,index,16,42,bracketed
+128014973116.89767,0.01,index,16,123,bracketed
+1298769469817.5503,0.001,index,16,123,bracketed
+128033473873.91272,0.01,index,16,456,bracketed
+1299358002986.4546,0.001,index,16,456,bracketed
+60356399432.4941,0.01,d23,2,42,bracketed
+630936926486.6042,0.001,d23,2,42,bracketed
+64506417656.675705,0.01,d23,2,123,bracketed
+676266151883.9797,0.001,d23,2,123,bracketed
+59428710472.76141,0.01,d23,2,456,bracketed
+620131975738.9409,0.001,d23,2,456,bracketed
+660004381479.441,0.01,d23,4,42,bracketed
+7238649573103.593,0.001,d23,4,42,bracketed
+651811304097.8615,0.01,d23,4,123,bracketed
+7156465419915.089,0.001,d23,4,123,bracketed
+609432613932.885,0.01,d23,4,456,bracketed
+6786405865825.603,0.001,d23,4,456,bracketed
+4581436796570.427,0.01,d23,8,42,bracketed
+46922511719694.55,0.001,d23,8,42,bracketed
+4673908424415.267,0.01,d23,8,123,bracketed
+47988741971718.87,0.001,d23,8,123,bracketed
+4907740133496.909,0.01,d23,8,456,bracketed
+50257788390957.21,0.001,d23,8,456,bracketed
+59733984636066.92,0.01,d23,16,42,bracketed
+606932194985793.5,0.001,d23,16,42,bracketed
+63787452640710.12,0.01,d23,16,123,bracketed
+645545899275085.1,0.001,d23,16,123,bracketed
+58484698312712.79,0.01,d23,16,456,bracketed
+601057121708348.5,0.001,d23,16,456,bracketed
+1231763295.2412038,0.01,rescale_optimistic,2,42,bracketed
+12876277608.710482,0.001,rescale_optimistic,2,42,bracketed
+1316457761.4009483,0.01,rescale_optimistic,2,123,bracketed
+13801382951.824581,0.001,rescale_optimistic,2,123,bracketed
+1212830578.50798,0.01,rescale_optimistic,2,456,bracketed
+12655727855.515097,0.001,rescale_optimistic,2,456,bracketed
+6784925636.67506,0.01,rescale_optimistic,4,42,bracketed
+70606576019.77037,0.001,rescale_optimistic,4,42,bracketed
+6708272290.008856,0.01,rescale_optimistic,4,123,bracketed
+69738838341.78159,0.001,rescale_optimistic,4,123,bracketed
+6248425255.104758,0.01,rescale_optimistic,4,456,bracketed
+64957538326.98727,0.001,rescale_optimistic,4,456,bracketed
+23740197040.42235,0.01,rescale_optimistic,8,42,bracketed
+243771748673.58624,0.001,rescale_optimistic,8,42,bracketed
+24214194191.14045,0.01,rescale_optimistic,8,123,bracketed
+248647036942.22433,0.001,rescale_optimistic,8,123,bracketed
+25428417683.69717,0.01,rescale_optimistic,8,456,bracketed
+260854976406.47705,0.001,rescale_optimistic,8,456,bracketed
+129672888479.07655,0.01,rescale_optimistic,16,42,bracketed
+1322418367942.8113,0.001,rescale_optimistic,16,42,bracketed
+138465842825.69638,0.01,rescale_optimistic,16,123,bracketed
+1413423859497.1128,0.001,rescale_optimistic,16,123,bracketed
+126846474780.50134,0.01,rescale_optimistic,16,456,bracketed
+1294074020852.3418,0.001,rescale_optimistic,16,456,bracketed

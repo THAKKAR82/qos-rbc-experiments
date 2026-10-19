@@ -34,6 +34,29 @@
    - **CFPB toy (refinement B):** two labelled column selections, (i) a seeded random 64 columns and (ii) the top 64 by training document frequency, each with its resulting s reported. This toy is a derived dataset object; register it in `data/manifest.csv` per the provenance convention.
    - **Query accounting (refinement D):** must include the **real-part extraction (LCU) step**. The reference implements each QSVT polynomial as the real part of the block, and the dense cross-check shows the imaginary part is nonzero (0.3–0.5). So every QSVT stage (sign, amplification, pseudo-inverse) needs the LCU combination of the circuit with its conjugate. This costs one ancilla, and its query cost must be counted explicitly (per the reference's claim, same samples, but the circuit is still applied twice). Not implemented yet.
 
+## Approved N-dependence check before (b)
+
+The 2026-10-19 handoff requests a primary-path repeat at N = 128,
+s = {2, 4, 8, 16}, seeds = {42, 123, 456}, with the unchanged M grid
+10^4 through 10^11 and targets ε* = 10^-2 and 10^-3. Reuse the phase-(a)
+measurement and fit functions. Checkpoint each point and monitor process RSS
+against the 4 GiB gate; wrap the run in `caffeinate -i`.
+
+Report raw and polylog-divided α_s alongside the frozen N = 64 results,
+flagging absolute changes greater than 0.3. Also recompute N = 64 fits from
+the saved points restricted to the same s and seeds, to separate N dependence
+from differences in the fitted sparsity range. Preserve the original bootstrap
+convention and report local slopes. Existing results remain immutable.
+
+Command (from `experiments/qos_tightness/`):
+`caffeinate -i ../../.venv-qos-ref/bin/python -m qostight.phase_a run --n-check --workers 2 --append-ledger`.
+Resume by adding `--resume results/tightness/<run_directory>`.
+Commit the results, report, and **stop before phase (b)**.
+
+Completed 2026-10-19: [N-dependence report](N_DEPENDENCE.md). All 96 points
+completed; no estimable global exponent changes by more than 0.3 against
+either the published or matched N = 64 baseline. Phase (b) has not started.
+
 ## Proof-derived exponents (comparison targets)
 
 | Component | Source | Dependence |

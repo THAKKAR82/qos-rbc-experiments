@@ -132,3 +132,39 @@ def test_fit_alpha_insufficient_s_is_nan_not_error():
     from qostight.phase_a import fit_alpha
     r = fit_alpha([dict(s=2, seed=1, eps=1e-2, M_star=float("nan"))], eps=1e-2, n_boot=10)
     assert math.isnan(r["alpha"]) and r["status"] == "insufficient s"
+
+
+def test_worker_uses_manifest_size_and_resumes(tmp_path, monkeypatch):
+    from qostight import phase_a
+    (tmp_path / 'manifest.json').write_text(json.dumps({'N': 128}))
+    calls = []
+    def measure(mode, s, seed, M, N):
+        calls.append(N)
+        return dict(mode=mode, s=s, seed=seed, M=M, N=N, seconds=0)
+    monkeypatch.setattr(phase_a, 'measure_point', measure)
+    from qostight import resources
+    monkeypatch.setattr(resources, 'gate_ok', lambda *a, **kw: True)
+    points = [('primary', 2, 42, 10000)]
+    phase_a.worker(tmp_path, 0, points)
+    phase_a.worker(tmp_path, 0, points)
+    assert calls == [128]
+    rows = phase_a.read_checkpoints(tmp_path / 'checkpoints')
+    assert len(rows) == 1 and rows[0]['N'] == 128
+    assert rows[0]['peak_rss_bytes'] > 0
+
+
+def test_analysis_polylog_uses_supplied_N():
+    from qostight.phase_a import analyze, M_GRID, d23_polylog
+    rows = []
+    for s in (2, 4, 8, 16):
+        for M in M_GRID:
+            rows.append(dict(mode='primary', s=s, seed=42, M=M,
+                             samples_element=M, err_element=1e3*s/M,
+                             samples_index=M, err_index=1e3*s/M,
+                             samples_d23=M, err_d23=1e3*s/M,
+                             samples_be_query=M, err_rescale=1e3*s/M))
+    out = analyze(rows, N=128, n_boot=10)
+    fits = {(f['quantity'], f['eps'], f['polylog']): f['alpha'] for f in out['alpha_fits']}
+    expected = np.polyfit(np.log([2, 4, 8, 16]),
+                         [np.log(s / d23_polylog(s, 128, 0.01)) for s in (2, 4, 8, 16)], 1)[0]
+    assert fits[('d23', 0.01, 'polylog_divided')] == pytest.approx(expected)

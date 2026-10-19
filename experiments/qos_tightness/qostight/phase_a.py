@@ -250,7 +250,8 @@ def a2prime_vs_s(rows):
 def worker(run_dir, worker_id, points):
     """Process points sequentially, checkpointing each; skip points already done (resume)."""
     import psutil
-    from .resources import gate_ok
+    from .resources import gate_ok, measured
+    N = json.loads((Path(run_dir) / "manifest.json").read_text())["N"]
     ck = Path(run_dir) / "checkpoints"
     ck.mkdir(parents=True, exist_ok=True)
     todo = pending_points([tuple(p) for p in points], read_checkpoints(ck))
@@ -258,8 +259,9 @@ def worker(run_dir, worker_id, points):
         proc = psutil.Process()
         if not gate_ok(psutil.virtual_memory().available, proc.memory_info().rss):
             raise SystemExit(f"memory gate: available={psutil.virtual_memory().available}")
-        row = measure_point(mode, s, seed, M)
-        row.update(worker_id=worker_id, peak_rss_bytes=proc.memory_info().rss)
+        with measured() as mem:
+            row = measure_point(mode, s, seed, M, N=N)
+        row.update(worker_id=worker_id, peak_rss_bytes=mem["peak_rss_bytes"])
         append_checkpoint(ck / f"w{worker_id}.jsonl", row)
         print("point", mode, s, seed, M, f"{row['seconds']:.1f}s", flush=True)
 
@@ -321,6 +323,8 @@ def main(argv=None):
     w = sub.add_parser("worker"); w.add_argument("run_dir"); w.add_argument("worker_id", type=int); w.add_argument("points")
     r = sub.add_parser("run"); r.add_argument("--resume"); r.add_argument("--workers", type=int, default=1)
     r.add_argument("--partest"); r.add_argument("--append-ledger", action="store_true")
+    r.add_argument("--n-check", action="store_true",
+                   help="N=128 primary only, s=2,4,8,16, seeds=42,123,456")
     args = p.parse_args(argv)
     require_qos_ref_venv()
     if args.cmd == "partest-worker":
@@ -344,18 +348,22 @@ def run(args):
         run_dir = REPO / args.resume
         manifest = json.loads((run_dir / "manifest.json").read_text())
     else:
+        n_check = getattr(args, "n_check", False)
         now = datetime.now(timezone.utc)
         run_id = now.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
-        run_dir = REPO / "results" / "tightness" / f"phase_a_{run_id}"
+        run_dir = REPO / "results" / "tightness" / f"phase_a_{'n128_' if n_check else ''}{run_id}"
         run_dir.mkdir(parents=True)
         code = sorted(str(f.relative_to(REPO)) for f in (here / "qostight").glob("*.py"))
         manifest = dict(run_id=run_id, date_utc=now.isoformat(), interpretation=INTERPRETATION,
                         git_commit=git_commit(), reference_commit=REFERENCE_COMMIT, python=sys.version,
                         platform=platform.platform(), lock_sha256=sha(here / "requirements-lock.txt"),
                         code_sha256={c: sha(REPO / c) for c in code}, data_note=IDEAL_SPARSITY_NOTE,
-                        N=N_FIXED, s_values=list(S_VALUES), M_grid=list(M_GRID),
-                        seeds_per_s={str(s): list(seeds_for(s)) for s in S_VALUES},
-                        instances_note="s=32 has 3 instances (budget); its CIs are wider",
+                        N=128 if n_check else N_FIXED,
+                        s_values=list(S_VALUES[:-1] if n_check else S_VALUES), M_grid=list(M_GRID),
+                        seeds_per_s={str(s): list(SEEDS[:3] if n_check else seeds_for(s))
+                                     for s in (S_VALUES[:-1] if n_check else S_VALUES)},
+                        instances_note=("3 instances per s (N-dependence check)" if n_check else
+                                        "s=32 has 3 instances (budget); its CIs are wider"),
                         eps_targets=list(EPS_TARGETS), bootstrap=dict(n=2000, seed=BOOT_SEED, resample="instances within s"),
                         workers=args.workers, partest=(json.loads(Path(args.partest).read_text()) if args.partest else None),
                         modes=dict(primary="verified sign at D.23 precision; Theorem D.23 amplification",
@@ -363,16 +371,26 @@ def run(args):
                                    a2p_ii="a2' (ii): verified-bounded polynomial, fixed degree 101"),
                         predictions={q: dict(alpha=v[2], note=PREDICTION_NOTES[q]) for q, v in QUANTITIES.items()},
                         wall_seconds=0.0, stages=[], status="running")
+        if n_check:
+            manifest["modes"] = {"primary": manifest["modes"]["primary"]}
+        manifest["git_dirty_at_start"] = bool(subprocess.check_output(
+            ["git", "-C", str(REPO), "status", "--porcelain"], text=True).strip())
     def save():
         (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True))
     save()
     ck = run_dir / "checkpoints"; ck.mkdir(exist_ok=True)
     (run_dir / "assign").mkdir(exist_ok=True)
-    for mode in ("primary", "a2p_i", "a2p_ii"):
-        for s in S_VALUES:
-            pts = pending_points([p for p in all_points(mode) if p[1] == s], read_checkpoints(ck))
+    for mode in (m for m in ("primary", "a2p_i", "a2p_ii") if m in manifest["modes"]):
+        for s in manifest["s_values"]:
+            pts = pending_points([(mode, s, seed, M) for seed in manifest["seeds_per_s"][str(s)]
+                                  for M in manifest["M_grid"]], read_checkpoints(ck))
             if not pts:
                 continue
+            import psutil
+            from .resources import gate_ok
+            if not gate_ok(psutil.virtual_memory().available, psutil.Process().memory_info().rss,
+                           before_stage=True):
+                raise SystemExit("memory gate before stage; resume when >=4 GiB available")
             t0 = time.perf_counter()
             procs = []
             for k, part in enumerate(shard(pts, manifest["workers"])):
@@ -392,7 +410,7 @@ def run(args):
                 manifest["status"] = "interrupted"; save()
                 raise SystemExit(f"worker failure at {mode} s={s}; rerun with --resume {run_dir.relative_to(REPO)}")
     rows = read_checkpoints(ck)
-    out = analyze(rows)
+    out = analyze(rows, N=manifest["N"])
     def write(name, recs):
         keys = sorted({k for r in recs for k in r})
         with open(run_dir / name, "w", newline="") as f:
@@ -409,7 +427,7 @@ def run(args):
         return dict(experiment_id=f"qos-tightness-phase-a-{manifest['run_id']}-{suffix}",
                     dataset="synthetic circulant sparse (uniform s; ideal-sparsity case)", date=date,
                     git_commit=manifest["git_commit"], preprocessing="none (synthetic, ||X||=1)",
-                    n_samples=N_FIXED, n_features=N_FIXED, max_sparsity=s,
+                    n_samples=manifest["N"], n_features=manifest["N"], max_sparsity=s,
                     sketch_method="QOS expected unitary (reference qos.py @ a3fe8d6)", sketch_dimension="", seed=42,
                     model="sparse oracles (Lemma D.21) + block encoding (Lemma D.22) + Theorem D.23 amplification",
                     metric=metric, result=result,
@@ -417,9 +435,11 @@ def run(args):
                                           artifact_dir=str(run_dir.relative_to(REPO))), sort_keys=True))
     for f in out["alpha_fits"]:
         ledger.append(lrow(f"alpha-{f['quantity']}-eps{f['eps']:g}-{f['polylog']}", "fitted_alpha_s", f["alpha"],
-                           "2-32", dict(ci95=f["ci95"], predicted=f["predicted"], n_instances=f["n_instances"])))
+                           f"{min(manifest['s_values'])}-{max(manifest['s_values'])}",
+                           dict(ci95=f["ci95"], predicted=f["predicted"], n_instances=f["n_instances"])))
     for f in out["beta_fits"]:
-        ledger.append(lrow(f"beta-{f['quantity']}", "fitted_beta_eps", f["beta"], "2-32",
+        ledger.append(lrow(f"beta-{f['quantity']}", "fitted_beta_eps", f["beta"],
+                           f"{min(manifest['s_values'])}-{max(manifest['s_values'])}",
                            dict(ci95=f["ci95"], predicted=f["predicted"])))
     for r in a2prime_vs_s(rows):
         if r["mode"] != "primary":
