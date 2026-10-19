@@ -1,0 +1,115 @@
+N,amplification_degree,criterion,error_spec,input,pass,path,s,samples_total,unit_num_samples
+16,49,<= poly_eps 0.0001,1.776858816924996e-09,exact A/s,True,primary: Theorem D.23 amplification,2,,
+16,,diagnostic,0.03767939046151614,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,2500000,10000
+16,49,diagnostic,0.037679390245573624,sketched,,primary: Theorem D.23 amplification,2,122500000,10000
+16,,diagnostic,0.03767939046151614,sketched,,optimistic: reference convention,2,2500000,10000
+16,,diagnostic,0.004280656662867164,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,25000000,100000
+16,49,diagnostic,0.0042806554593899085,sketched,,primary: Theorem D.23 amplification,2,1225000000,100000
+16,,diagnostic,0.004280656662867164,sketched,,optimistic: reference convention,2,25000000,100000
+16,,diagnostic,0.000783418286067535,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,250000000,1000000
+16,49,diagnostic,0.0007834166100720389,sketched,,primary: Theorem D.23 amplification,2,12250000000,1000000
+16,,diagnostic,0.000783418286067535,sketched,,optimistic: reference convention,2,250000000,1000000
+16,,diagnostic,0.00045043492053129446,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,2500000000,10000000
+16,49,diagnostic,0.00045043357765241004,sketched,,primary: Theorem D.23 amplification,2,122500000000,10000000
+16,,diagnostic,0.00045043492053129446,sketched,,optimistic: reference convention,2,2500000000,10000000
+16,,diagnostic,0.00041852332974322667,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,25000000000,100000000
+16,49,diagnostic,0.0004185219860434446,sketched,,primary: Theorem D.23 amplification,2,1225000000000,100000000
+16,,diagnostic,0.00041852332974322667,sketched,,optimistic: reference convention,2,25000000000,100000000
+16,,diagnostic,0.0004150181243080289,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,2500000000000,10000000000
+16,49,<= 0.001 at largest M,0.0004150167806074209,sketched,True,primary: Theorem D.23 amplification,2,122500000000000,10000000000
+16,,<= 0.001 at largest M,0.0004150181243080289,sketched,True,optimistic: reference convention,2,2500000000000,10000000000
+16,97,<= poly_eps 0.0001,4.901875837430907e-05,exact A/s,True,primary: Theorem D.23 amplification,4,,
+16,,diagnostic,0.03328069198298699,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,4420000,10000
+16,97,diagnostic,0.06654441304548768,sketched,,primary: Theorem D.23 amplification,4,428740000,10000
+16,,diagnostic,0.06656138396597398,sketched,,optimistic: reference convention,4,4420000,10000
+16,,diagnostic,0.0038759294677192997,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,44200000,100000
+16,97,diagnostic,0.007764570393350427,sketched,,primary: Theorem D.23 amplification,4,4287400000,100000
+16,,diagnostic,0.007751858935438599,sketched,,optimistic: reference convention,4,44200000,100000
+16,,diagnostic,0.0005913870262911676,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,442000000,1000000
+16,97,diagnostic,0.0012130730405878491,sketched,,primary: Theorem D.23 amplification,4,42874000000,1000000
+16,,diagnostic,0.0011827740525823351,sketched,,optimistic: reference convention,4,442000000,1000000
+16,,diagnostic,0.0002743114596100103,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,4420000000,10000000
+16,97,diagnostic,0.000594474366964383,sketched,,primary: Theorem D.23 amplification,4,428740000000,10000000
+16,,diagnostic,0.0005486229192200207,sketched,,optimistic: reference convention,4,4420000000,10000000
+16,,diagnostic,0.0002465027347465402,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,44200000000,100000000
+16,97,diagnostic,0.0005382413978775107,sketched,,primary: Theorem D.23 amplification,4,4287400000000,100000000
+16,,diagnostic,0.0004930054694930804,sketched,,optimistic: reference convention,4,44200000000,100000000
+16,,diagnostic,0.00024353551317275098,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,4420000000000,10000000000
+16,97,<= 0.001 at largest M,0.0005321662753741077,sketched,True,primary: Theorem D.23 amplification,4,428740000000000,10000000000
+16,,<= 0.001 at largest M,0.00048707102634550195,sketched,True,optimistic: reference convention,4,4420000000000,10000000000
+16,193,<= poly_eps 0.0001,6.7668086928588846e-06,exact A/s,True,primary: Theorem D.23 amplification,8,,
+16,,diagnostic,0.023250400363748654,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,8100000,10000
+16,193,diagnostic,0.09300219308405956,sketched,,primary: Theorem D.23 amplification,8,1563300000,10000
+16,,diagnostic,0.09300160145499461,sketched,,optimistic: reference convention,8,8100000,10000
+16,,diagnostic,0.0029954862899536088,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,81000000,100000
+16,193,diagnostic,0.011979724022142597,sketched,,primary: Theorem D.23 amplification,8,15633000000,100000
+16,,diagnostic,0.011981945159814435,sketched,,optimistic: reference convention,8,81000000,100000
+16,,diagnostic,0.0005182881270073739,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,810000000,1000000
+16,193,diagnostic,0.0020679524596763548,sketched,,primary: Theorem D.23 amplification,8,156330000000,1000000
+16,,diagnostic,0.0020731525080294956,sketched,,optimistic: reference convention,8,810000000,1000000
+16,,diagnostic,0.0002793130807505496,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,8100000000,10000000
+16,193,diagnostic,0.001111585512973758,sketched,,primary: Theorem D.23 amplification,8,1563300000000,10000000
+16,,diagnostic,0.0011172523230021983,sketched,,optimistic: reference convention,8,8100000000,10000000
+16,,diagnostic,0.0002566395144572948,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,81000000000,100000000
+16,193,diagnostic,0.0010209131286291338,sketched,,primary: Theorem D.23 amplification,8,15633000000000,100000000
+16,,diagnostic,0.0010265580578291793,sketched,,optimistic: reference convention,8,81000000000,100000000
+16,,diagnostic,0.00025416704659894917,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,8100000000000,10000000000
+16,193,<= 0.001 at largest M,0.0010110269895918771,sketched,False,primary: Theorem D.23 amplification,8,1563300000000000,10000000000
+16,,<= 0.001 at largest M,0.0010166681863957967,sketched,False,optimistic: reference convention,8,8100000000000,10000000000
+32,49,<= poly_eps 0.0001,2.2696416341911356e-09,exact A/s,True,primary: Theorem D.23 amplification,2,,
+32,,diagnostic,0.09652860619628663,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,3120000,10000
+32,49,diagnostic,0.09652860561577674,sketched,,primary: Theorem D.23 amplification,2,152880000,10000
+32,,diagnostic,0.09652860619628663,sketched,,optimistic: reference convention,2,3120000,10000
+32,,diagnostic,0.01125360877557605,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,31200000,100000
+32,49,diagnostic,0.011253607280842924,sketched,,primary: Theorem D.23 amplification,2,1528800000,100000
+32,,diagnostic,0.01125360877557605,sketched,,optimistic: reference convention,2,31200000,100000
+32,,diagnostic,0.0015640268334484206,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,312000000,1000000
+32,49,diagnostic,0.0015640247395908402,sketched,,primary: Theorem D.23 amplification,2,15288000000,1000000
+32,,diagnostic,0.0015640268334484206,sketched,,optimistic: reference convention,2,312000000,1000000
+32,,diagnostic,0.0005904692599500805,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,3120000000,10000000
+32,49,diagnostic,0.0005904678230315583,sketched,,primary: Theorem D.23 amplification,2,152880000000,10000000
+32,,diagnostic,0.0005904692599500805,sketched,,optimistic: reference convention,2,3120000000,10000000
+32,,diagnostic,0.000499390915201985,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,31200000000,100000000
+32,49,diagnostic,0.0004993895485182598,sketched,,primary: Theorem D.23 amplification,2,1528800000000,100000000
+32,,diagnostic,0.000499390915201985,sketched,,optimistic: reference convention,2,31200000000,100000000
+32,,diagnostic,0.000489593045761214,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),2,3120000000000,10000000000
+32,49,<= 0.001 at largest M,0.0004895917277326705,sketched,True,primary: Theorem D.23 amplification,2,152880000000000,10000000000
+32,,<= 0.001 at largest M,0.000489593045761214,sketched,True,optimistic: reference convention,2,3120000000000,10000000000
+32,97,<= poly_eps 0.0001,4.901875837489859e-05,exact A/s,True,primary: Theorem D.23 amplification,4,,
+32,,diagnostic,0.08353057613862784,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,5520000,10000
+32,97,diagnostic,0.16705538491344832,sketched,,primary: Theorem D.23 amplification,4,535440000,10000
+32,,diagnostic,0.16706115227725568,sketched,,optimistic: reference convention,4,5520000,10000
+32,,diagnostic,0.010880737241905504,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,55200000,100000
+32,97,diagnostic,0.021768386463220234,sketched,,primary: Theorem D.23 amplification,4,5354400000,100000
+32,,diagnostic,0.021761474483811008,sketched,,optimistic: reference convention,4,55200000,100000
+32,,diagnostic,0.0014265159919133175,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,552000000,1000000
+32,97,diagnostic,0.002895066329347381,sketched,,primary: Theorem D.23 amplification,4,53544000000,1000000
+32,,diagnostic,0.002853031983826635,sketched,,optimistic: reference convention,4,552000000,1000000
+32,,diagnostic,0.00046287326530984173,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,5520000000,10000000
+32,97,diagnostic,0.0009722729398382279,sketched,,primary: Theorem D.23 amplification,4,535440000000,10000000
+32,,diagnostic,0.0009257465306196835,sketched,,optimistic: reference convention,4,5520000000,10000000
+32,,diagnostic,0.000369266700162078,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,55200000000,100000000
+32,97,diagnostic,0.0007854016713626502,sketched,,primary: Theorem D.23 amplification,4,5354400000000,100000000
+32,,diagnostic,0.000738533400324156,sketched,,optimistic: reference convention,4,55200000000,100000000
+32,,diagnostic,0.0003591087266194576,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),4,5520000000000,10000000000
+32,97,<= 0.001 at largest M,0.0007650958609340414,sketched,True,primary: Theorem D.23 amplification,4,535440000000000,10000000000
+32,,<= 0.001 at largest M,0.0007182174532389152,sketched,True,optimistic: reference convention,4,5520000000000,10000000000
+32,193,<= poly_eps 0.0001,6.7668086918843935e-06,exact A/s,True,primary: Theorem D.23 amplification,8,,
+32,,diagnostic,0.06242255396243103,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,10120000,10000
+32,193,diagnostic,0.24969024827925956,sketched,,primary: Theorem D.23 amplification,8,1953160000,10000
+32,,diagnostic,0.24969021584972412,sketched,,optimistic: reference convention,8,10120000,10000
+32,,diagnostic,0.010199309659735346,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,101200000,100000
+32,193,diagnostic,0.04079957842736223,sketched,,primary: Theorem D.23 amplification,8,19531600000,100000
+32,,diagnostic,0.040797238638941385,sketched,,optimistic: reference convention,8,101200000,100000
+32,,diagnostic,0.0014331948519747755,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,1012000000,1000000
+32,193,diagnostic,0.005730707744593141,sketched,,primary: Theorem D.23 amplification,8,195316000000,1000000
+32,,diagnostic,0.005732779407899102,sketched,,optimistic: reference convention,8,1012000000,1000000
+32,,diagnostic,0.0005225807348566612,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,10120000000,10000000
+32,193,diagnostic,0.0020869175216930414,sketched,,primary: Theorem D.23 amplification,8,1953160000000,10000000
+32,,diagnostic,0.002090322939426645,sketched,,optimistic: reference convention,8,10120000000,10000000
+32,,diagnostic,0.0004382091045159023,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,101200000000,100000000
+32,193,diagnostic,0.0017498644304774858,sketched,,primary: Theorem D.23 amplification,8,19531600000000,100000000
+32,,diagnostic,0.0017528364180636091,sketched,,optimistic: reference convention,8,101200000000,100000000
+32,,diagnostic,0.00042919468690571757,sketched (diagnostic),,subnormalized A/s vs A/s (no amplification),8,10120000000000,10000000000
+32,193,<= 0.001 at largest M,0.0017138858370881608,sketched,False,primary: Theorem D.23 amplification,8,1953160000000000,10000000000
+32,,<= 0.001 at largest M,0.0017167787476228703,sketched,False,optimistic: reference convention,8,10120000000000,10000000000

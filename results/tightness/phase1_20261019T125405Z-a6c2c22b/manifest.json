@@ -1,0 +1,38 @@
+{
+  "artifacts_sha256": {
+    "calibration.csv": "4b6d50101b1863256e4c16e47ad3a6dc8aa9077cfdb376ed6203d976cb64c786",
+    "d23_validation.csv": "5e6954c27961415001b88eb7bd867391677170d8b8964be07131306cbe799d94",
+    "dense_crosscheck.csv": "9ea520598e1633360c4c223d397dc54be165ec78fb04d049595bc4ddab645215",
+    "ledger_rows.csv": "c7668a6f8e5d9d38a33cfd3fdab0eec4ed9dc0ed7baec96bb956955d5b6a57f9"
+  },
+  "code_sha256": {
+    "experiments/qos_tightness/qostight/__init__.py": "a9244f0a38e854ca10ac191ade6216a181db96b1cce9786004f65b161ec9f1ba",
+    "experiments/qos_tightness/qostight/accounting.py": "0ea2357394e9762c977fd9fb577906851e6d3ab616f8073be8e757f69712e526",
+    "experiments/qos_tightness/qostight/blockenc.py": "d641c555159dfb51d0e20410f6fddf0a3eae29c08dc0bfbcfe8845bb7f87ae8a",
+    "experiments/qos_tightness/qostight/env.py": "3a3918c77bc0d03cc76e125402365f0ac94f5faa171ac7a1218ed575925f5ced",
+    "experiments/qos_tightness/qostight/matrices.py": "c61f9c36d7907263eb23d9112914676569b9ab0e635f316e47bca1d1eaa6c764",
+    "experiments/qos_tightness/qostight/phase1.py": "c1765e99c25bc1f372d37d9e5c669f4b42815a127f0d221350106bdd492f98fe",
+    "experiments/qos_tightness/qostight/polynomials.py": "5af86b9f81944f89a9ccd8344ebb6ca5ca3561462ff9eba36ef8d42e8c61133b",
+    "experiments/qos_tightness/qostight/qsvt_tools.py": "a1cfc1b8f088cd5d2e612b071b924f9fd78f43ca0348d6a9af1f4351b8d3da68",
+    "experiments/qos_tightness/qostight/resources.py": "87bea1f40ad60b6bfc7f8f0d7454047d361cbe741c36f15df363bd7cbd4f541f",
+    "experiments/qos_tightness/qostight/run_phase1.py": "deb785bfadf752c7412094db4be1f7a481ae7f12541d8d6447477bba689e3ef1"
+  },
+  "conventions": {
+    "amplification": "primary: Theorem D.23 odd polynomial, eps = 1e-4; comparison 'optimistic: reference convention' = classical multiply by s",
+    "model": "expected-unitary oracles (reference qos.py); pessimistic per reference",
+    "qsvt": "singular-value shortcut under Halmos completion; cross-checked against reference dense apply_qsvt",
+    "sign_degree": "primary: d = ceil(ln(1/eps)/sin(pi/(4s+2))), eps = 1e-4 (Lemma D.21); reference fixed 101 is the a2' comparison"
+  },
+  "data_note": "synthetic circulant support: uniform row and column sparsity (ideal case), unlike real data whose s is set by heavy columns",
+  "date_utc": "2026-10-19T12:54:05.929538+00:00",
+  "git_commit": "acc0a4dbc9069f29da19a981792d6498b6223769",
+  "interpretation": "simulation (expected-unitary QOS, reference convention)",
+  "ledger_appended": true,
+  "lock_sha256": "85df24f7a39d90ca1f6b7e37c6ddb9fa6adcba4e167e8629a7557dd022f1c2be",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "reference_commit": "a3fe8d6fe777750749f5e90131180e016088bdaf",
+  "run_id": "20261019T125405Z-a6c2c22b",
+  "seed": 42,
+  "status": "completed"
+}

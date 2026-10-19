@@ -12,6 +12,7 @@ validation/
 
 data/*
 !data/.gitkeep
+.venv-qos-ref/
 
 # Dataset provenance is tracked; legacy raw paths remain local by default.
 !data/README.md

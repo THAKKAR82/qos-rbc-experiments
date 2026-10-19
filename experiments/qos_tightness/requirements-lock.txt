@@ -1,0 +1,31 @@
+# Locked environment for experiments/qos_tightness (run ONLY under .venv-qos-ref).
+# Base interpreter: 3.13.9 from /opt/anaconda3/bin/python3.13 (arm64 macOS)
+# Reference: reference/quantum-oracle-sketching @ a3fe8d6fe777750749f5e90131180e016088bdaf
+# Reference requirements.txt pins kept except scvelo (PBMC-only, unused); pytest + psutil added.
+cloudpickle==3.1.2
+contourpy==1.4.0
+cycler==0.12.1
+fonttools==4.67.0
+iniconfig==2.3.1
+jax==0.8.1
+jaxlib==0.8.1
+joblib==1.6.0
+kiwisolver==1.5.1
+matplotlib==3.10.8
+ml_dtypes==0.6.0
+numpy==2.3.5
+opt_einsum==3.4.0
+packaging==26.3
+pillow==12.3.0
+pluggy==1.7.0
+psutil==7.2.2
+Pygments==2.21.0
+pyparsing==3.3.3
+pyqsp==0.2.0
+pytest==9.1.1
+python-dateutil==2.9.0.post0
+scikit-learn==1.8.0
+scipy==1.16.3
+six==1.17.0
+threadpoolctl==3.7.0
+tqdm==4.67.1
