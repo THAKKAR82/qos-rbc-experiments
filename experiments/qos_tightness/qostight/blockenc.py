@@ -62,7 +62,8 @@ def sign_angles(s, method="verified", degree=None, eps=None):
     raise ValueError(method)
 
 
-def sketched_block_encoding(A, unit_num_samples, sign_degree=None, sign_method="verified", eps_target=1e-4):
+def sketched_block_encoding(A, unit_num_samples, sign_degree=None, sign_method="verified", eps_target=1e-4,
+                            return_oracles=False):
     """Expected-unitary QOS block encoding of A / sqrt(s_r s_c) (= A/s for uniform sparsity).
 
     Primary: verified sign polynomial at the Theorem D.23 oracle precision eps / (s ln(1/eps)).
@@ -87,7 +88,9 @@ def sketched_block_encoding(A, unit_num_samples, sign_degree=None, sign_method="
                "col_index": int(oracles["col_index"][1])}
     samples["per_be_query"] = samples["row_index"] + samples["col_index"] + 2 * samples["element"]
     info = {k: {kk: vv for kk, vv in v.items() if kk != "angles"} for k, v in signs.items()}
-    return {"B": np.asarray(B).real, "B_imag_max": float(np.max(np.abs(np.asarray(B).imag))),
+    extra = ({"oracles": {"element": np.asarray(element), "row_index": np.asarray(oracles["row_index"][0]),
+                          "col_index": np.asarray(oracles["col_index"][0])}} if return_oracles else {})
+    return {**extra, "B": np.asarray(B).real, "B_imag_max": float(np.max(np.abs(np.asarray(B).imag))),
             "s_row": s_row, "s_col": s_col, "subnormalization": math.sqrt(s_row * s_col),
             "sign_degree": signs["row_index"]["degree"], "sign_method": signs["row_index"]["method"],
             "sign_info": info, "eps_target": eps_target,

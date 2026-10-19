@@ -1,0 +1,26 @@
+{
+  "speedup": 1.9831632515899482,
+  "use_two_workers": true,
+  "workers_1": {
+    "build_seconds": [
+      14.548160333186388
+    ],
+    "gate_held": true,
+    "min_available_bytes": 5243650048,
+    "rss_bytes": [
+      478068736
+    ]
+  },
+  "workers_2": {
+    "build_seconds": [
+      14.671671957941726,
+      14.37456625001505
+    ],
+    "gate_held": true,
+    "min_available_bytes": 5223383040,
+    "rss_bytes": [
+      599425024,
+      582139904
+    ]
+  }
+}
