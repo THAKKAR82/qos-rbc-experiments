@@ -38,3 +38,35 @@ def dense_qsvt_vs_shortcut(B, P, ref=None):
             "max_abs_imag": float(np.max(np.abs(block.imag))),
             "diag_block_max": float(max(np.max(np.abs(block.real[:m, :m])),
                                         np.max(np.abs(block.real[m:, m:]))))}
+
+
+class AngleVerificationError(RuntimeError):
+    pass
+
+
+def check_angles(P, angles, ref=None, n=2001):
+    """Max |QSVT response - P| on [-1, 1], using the reference's apply_qsvt_diag on 2x2 blocks."""
+    from .env import load_reference
+    import jax.numpy as jnp
+    ref = ref or load_reference()
+    x = np.linspace(-1, 1, n)
+    c = np.sqrt(1 - x**2)
+    U = jnp.stack([jnp.asarray(x), jnp.asarray(c), jnp.asarray(c), -jnp.asarray(x)]).reshape(2, 2, -1)
+    out = np.asarray(ref.qsvt.apply_qsvt_diag(U, num_ancilla=1, angle_set=jnp.asarray(angles))[0, 0]).real
+    return float(np.max(np.abs(out - P(x))))
+
+
+def verified_qsvt_angles(P, ref=None, tol=1e-10):
+    """sym_qsp phases for P (reference conversion), rejected unless the circuit reproduces P within tol."""
+    import contextlib, io
+    from .env import load_reference
+    ref = ref or load_reference()
+    with contextlib.redirect_stdout(io.StringIO()):
+        try:
+            angles = qsvt_angles(P, ref)
+        except Exception as exc:  # pyqsp may raise for invalid polynomials
+            raise AngleVerificationError(f"phase finding failed: {exc}") from exc
+    dev = check_angles(P, angles, ref)
+    if not dev <= tol:
+        raise AngleVerificationError(f"QSVT response deviates from P by {dev:.3e} > {tol:g}")
+    return angles, {"max_dev": dev, "degree": int(P.degree())}

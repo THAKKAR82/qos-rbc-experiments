@@ -33,3 +33,44 @@ def amplification_polynomial(s, eps=1e-4, max_degree=20001):
             return P
         deg = 2 * math.ceil(deg * 0.6) + 1
     raise RuntimeError(f"no valid amplification polynomial up to degree {max_degree} for s={s}")
+
+
+def d23_oracle_eps(eps, s):
+    """Theorem D.23 instantiates each sparse oracle at eps3 = Theta(eps / (s log(1/eps)))."""
+    return eps / (s * math.log(1 / eps))
+
+
+def sign_polynomial(s, eps=1e-6, degree=None, max_degree=8001):
+    """Odd, verified-bounded P ~ (1 - eps) sign(x) on |x| >= lambda* = sin(pi/(4s+2)) (Lemma D.21).
+
+    Chebyshev interpolation of (1 - eps) erf(k x), k = erfcinv(eps/2) / lambda*. Boundedness and
+    accuracy are checked on a dense grid. With `degree` fixed (the a2' comparison), the polynomial is
+    rescaled if needed to stay bounded and its achieved error is reported, not guaranteed.
+    """
+    lam = math.sin(math.pi / (4 * s + 2))
+    k = erfcinv(eps / 2) / lam
+    x = np.linspace(-1, 1, 200001)
+    outer = np.abs(x) >= lam
+    def build(deg):
+        P = Chebyshev.interpolate(lambda t: (1 - eps) * erf(k * t), deg)
+        coef = P.coef.copy(); coef[0::2] = 0.0
+        return Chebyshev(coef)
+    def check(P):
+        vals = P(x)
+        return float(np.max(np.abs(vals))), float(np.max(np.abs(vals[outer] - (1 - eps) * np.sign(x[outer]))))
+    if degree is not None:
+        P = build(degree)
+        peak, err = check(P)
+        if peak > 1.0:
+            P = P * ((1 - eps) / peak); peak, err = check(P)
+        return P, {"degree": int(degree), "achieved_error": err, "max_abs": peak, "bounded": peak <= 1.0,
+                   "lambda_star": lam, "eps": eps}
+    deg = 2 * math.ceil(k) + 1
+    while deg <= max_degree:
+        P = build(deg)
+        peak, err = check(P)
+        if peak <= 1.0 and err <= eps:
+            return P, {"degree": int(P.degree()), "achieved_error": err, "max_abs": peak, "bounded": True,
+                       "lambda_star": lam, "eps": eps}
+        deg = 2 * math.ceil(deg * 0.625) + 1
+    raise RuntimeError(f"no bounded sign polynomial up to degree {max_degree} for s={s}, eps={eps}")
