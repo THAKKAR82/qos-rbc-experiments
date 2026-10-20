@@ -68,7 +68,7 @@ def run(pilot_dir, out_root, cap_seconds=CAP_SECONDS):
     from .state import totals
     from .worker import Deadline, evaluate
 
-    pilot_dir = Path(pilot_dir)
+    pilot_dir = Path(pilot_dir).resolve()
     prep = json.loads((pilot_dir / "preparation.json").read_text())
     for task in TASKS:
         for part in ("train", "validation"):
@@ -77,7 +77,7 @@ def run(pilot_dir, out_root, cap_seconds=CAP_SECONDS):
                 raise ValueError(f"Pilot spool altered: {task}/{part}")
     now = datetime.now(timezone.utc)
     run_id = now.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
-    out = Path(out_root) / f"convergence_{run_id}"
+    out = Path(out_root).resolve() / f"convergence_{run_id}"
     out.mkdir(parents=True, exist_ok=False)
     configs = plan()
     manifest = dict(run_id=run_id, date_utc=now.isoformat(), interpretation=INTERPRETATION,
