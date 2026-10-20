@@ -1,0 +1,36 @@
+{
+  "alpha_N128": {
+    "ci95": "[3.2465158390260545, 3.2984262129151136]",
+    "source": "N=128 check d23 raw, eps*=1e-2",
+    "value": 3.2725419189912985
+  },
+  "alpha_N64": {
+    "ci95": "[3.1266865305509137, 3.1670777232939975]",
+    "source": "phase (a) d23 raw, eps*=1e-2",
+    "value": 3.1469107122161577
+  },
+  "date_utc": "2026-10-20T13:27:46.132549+00:00",
+  "inputs_sha256": {
+    "results/audit/bank_step1/derived/f61_decomposition_gamma_p10.csv": "45b5ee1b9f1aef50048bba50d130463a43d1a3689f2d973ec97bddec77554d89",
+    "results/audit/bank_step1/summary.csv": "702c08a22cc02a24d84f3038a13988c6fda8cce73de920ad7a3baaf19c8b732f",
+    "results/audit/cfpb_step1/derived/f61_decomposition_gamma_p10.csv": "983b8380c5468593114e47041fd9e0b1ec6a8353a40ff0e1ab03a180af024c44",
+    "results/audit/cfpb_step1/summary.csv": "7d40535c6d930a371960cb02194b60bb06e60153dd8c8636ce5156cf4c13580c",
+    "results/tightness/phase_a_20261019T145729Z-a1644ff3/alpha_fits.csv": "bdadfc929ec693871814610f5a263b47483a5827611a3d9cc020bf519cccb38c",
+    "results/tightness/phase_a_20261019T145729Z-a1644ff3/mstar.csv": "e00fbca8cdb3ed603f49c608a3768bc9ba9d1cd1e6d591b0ec20df79855394cc",
+    "results/tightness/phase_a_n128_20261019T153934Z-75edf052/alpha_fits.csv": "8c4f42efa362f8fe2c3f36a9d121a64146efb2ad72badb27f3ad90d224a7e32e"
+  },
+  "label": "extrapolation from small-size simulation; orders of magnitude only",
+  "method": "F61 log10 passes with the Theorem D.23 block-encoding s^5 replaced by measured s^alpha; readout s^2, kappa^4, gamma^-4, delta^-1 and min term kept at proof values (not measured)",
+  "outputs_sha256": {
+    "empirical_f61.csv": "e4b38b6fbadfffe2a57532d65f7f300dd23ff6a6f17cabf275f4865759ef9b8e"
+  },
+  "per_query_anchor": {
+    "at": "N=64, s=32, median over 3 instances (phase (a) mstar)",
+    "samples_eps1e_2": 128433845943940.55,
+    "samples_eps1e_3": 1306033342722315.5,
+    "scaling": "(s/32)^alpha x (padded_dim/64); dimension factor is the theorem's, not measured"
+  },
+  "qos_audit_sha256": "01bc5fc897c90a3babdf3bf09f52b03516dbe757610616e3fc28b43fc9baee48",
+  "script_sha256": "da9c81c33101c729a35f8cff85280ebfa3b8b169888c2677b05278f13aed9c86",
+  "selection": "CFPB: per task max validation accuracy, ties to larger alpha; Bank: one alpha by mean CV-fold accuracy"
+}

@@ -363,3 +363,27 @@ def test_family_summary_selected_and_cost_min_alpha():
                                select_by='test_accuracy', pooled=True)
     assert pooled['selected_alphas'] == [1.]
     assert pooled['log10_F61_p10_selected_alpha_min'] == 28. and pooled['log10_F61_p10_selected_alpha_max'] == 30.
+
+
+# ---------------------------------------------------------------- empirical F61 (step 1 of close-out)
+def test_empirical_f61_replaces_only_block_encoding_s5():
+    row = {'s': 100, 'log10_s^7': 14.0, 'log10_kappa^4': 4.0, 'log10_gamma^-4': 4.0,
+           'log10_delta^-1': 1.0, 'log10_min_term': 2.0, 'log10_total': 25.0}
+    out = qa.empirical_f61(row, alpha_s=3.0)
+    assert out['log10_s_block_encoding_proof'] == pytest.approx(10.0)      # s^5
+    assert out['log10_s_block_encoding_measured'] == pytest.approx(6.0)    # s^3
+    assert out['log10_s_readout_proof'] == pytest.approx(4.0)              # s^2 from Q^2, unchanged
+    assert out['log10_total_empirical'] == pytest.approx(25.0 - 2 * 2.0)  # (5 - 3) * log10(100)
+    assert out['kappa_gamma_delta_status'] == 'proof values (not measured)'
+
+
+def test_empirical_f61_rejects_inconsistent_s7():
+    with pytest.raises(ValueError):
+        qa.empirical_f61({'s': 100, 'log10_s^7': 13.0, 'log10_kappa^4': 0, 'log10_gamma^-4': 0,
+                          'log10_delta^-1': 0, 'log10_min_term': 0, 'log10_total': 13.0}, alpha_s=3.0)
+
+
+def test_anchored_per_query_samples_scaling():
+    assert qa.anchored_per_query_samples(64, 2**16, alpha_s=3.0, anchor_samples=1e14, anchor_s=32,
+                                         anchor_dim=64) == pytest.approx(1e14 * 8 * 1024)
+    assert qa.padded_dimension(13459, 50000) == 2**16

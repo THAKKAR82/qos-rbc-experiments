@@ -790,3 +790,40 @@ def family_summary(summary, decomposition, *, dataset: str, family: str, status:
                 log10_F61_p10_costmin_alpha_grid_edge_max=float(costmin.log10_total.max()),
                 log10_s1_floor_costmin_alpha_min=float(costmin.log10_total_s1.min()),
                 log10_s1_floor_costmin_alpha_max=float(costmin.log10_total_s1.max()))
+
+
+# ---------------------------------------------------------------- empirical F61 (close-out)
+EMPIRICAL_LABEL = "extrapolation from small-size simulation; orders of magnitude only"
+PROOF_BE_S_EXPONENT = 5.0  # Theorem D.23: O~(R N s^5 / eps) per block-encoding query
+
+
+def empirical_f61(row, alpha_s):
+    """log10 F61 at gamma = p10 with the block-encoding s^5 replaced by a measured s^alpha.
+
+    F104: s^7 = s^5 (per-query block encoding, Theorem D.23) x s^2 (Q^2 via F97). Only the s^5 is
+    replaced; kappa^4, gamma^-4, delta^-1, the min term and the readout s^2 keep their proof values,
+    which are NOT measured. Pure arithmetic on a saved decomposition row.
+    """
+    s = float(row["s"])
+    ls = math.log10(s)
+    if not math.isclose(float(row["log10_s^7"]), 7 * ls, rel_tol=1e-9, abs_tol=1e-9):
+        raise ValueError("decomposition row's log10_s^7 is not 7 log10(s)")
+    be_proof, be_meas = PROOF_BE_S_EXPONENT * ls, float(alpha_s) * ls
+    return dict(alpha_s=float(alpha_s), log10_s_block_encoding_proof=be_proof,
+                log10_s_block_encoding_measured=be_meas, log10_s_readout_proof=2 * ls,
+                log10_total_proof=float(row["log10_total"]),
+                log10_total_empirical=float(row["log10_total"]) - (be_proof - be_meas),
+                kappa_gamma_delta_status="proof values (not measured)", label=EMPIRICAL_LABEL)
+
+
+def padded_dimension(N, D):
+    """2^n with n = ceil(log2(max(N, D))), the embedding dimension used by the proof (F99)."""
+    return 1 << (int(max(N, D)) - 1).bit_length()
+
+
+def anchored_per_query_samples(s, dim, alpha_s, anchor_samples, anchor_s=32, anchor_dim=64):
+    """Samples per A/2 block-encoding query, scaled from a measured anchor by (s/s0)^alpha (dim/dim0).
+
+    The linear padded-dimension factor is the theorem's (D211), not measured. Extrapolation only.
+    """
+    return float(anchor_samples) * (float(s) / anchor_s) ** float(alpha_s) * (float(dim) / anchor_dim)
