@@ -4,11 +4,16 @@ Float64, half squared loss, no intercept, no class weighting, no averaging.
 AWM follows the paper's projected-tail predictor. MISSION uses an exact bounded
 touched-coordinate candidate heap; it does not enumerate global heavy hitters.
 """
+import copy
 import math
+import sys
 import numpy as np
 from .state import inventory, totals
 
 MASK = (1 << 64) - 1
+ALLOCATOR_VERSION = 'bookkeeping-v2'
+STATE_MARGIN_BYTES = 512
+MAX_UPDATES = (1 << 63) - 1
 
 
 def mix_scalar(x):
@@ -227,6 +232,8 @@ class Learner:
         return self.eta0 / math.sqrt(1 + t / self.tau)
 
     def update(self, keys, x, y):
+        if self.t >= MAX_UPDATES:
+            raise OverflowError('Training counter exceeds the declared allocation bound')
         if y not in (-1, 1):
             raise ValueError('Binary ±1 label required')
         indices, signs = self._features(keys, x)
@@ -305,9 +312,44 @@ class Learner:
         return obj
 
 
+def allocation_bound(model):
+    """Bound reachable bytes for every supported trained state, not measured RSS.
+
+    Only t, scale and active.n change scalar identity/size during updates. Count
+    fixed state with those slots absent, then charge independent largest scalar
+    objects: 0 <= t <= MAX_UPDATES, 0 <= n <= capacity, and one Python float.
+    This retains any immutable aliases (e.g. eta0 sharing scale's initial 1.0).
+    Shallow copies of the two control objects leave arrays, RNG and model intact.
+    Actual state_inventory accounting and the separate 512-byte margin are unchanged.
+    """
+    if not 0 <= model.t <= MAX_UPDATES:
+        raise ValueError('Training counter outside the declared allocation bound')
+    if model.active is not None and not 0 <= model.active.n <= model.active.capacity:
+        raise ValueError('Heap occupancy outside the declared allocation bound')
+    fixed = copy.copy(model)
+    fixed.t = fixed.scale = None
+    scalar_bytes = sys.getsizeof(MAX_UPDATES) + sys.getsizeof(0.0)
+    if model.active is not None:
+        fixed.active = copy.copy(model.active)
+        fixed.active.n = None
+        scalar_bytes += sys.getsizeof(model.active.capacity)
+    return fixed.state_bytes() + scalar_bytes
+
+
+def allocation_metadata(model):
+    """Allocation provenance for a newly initialized learner; harness metadata."""
+    initial = model.state_bytes()
+    bound = allocation_bound(model)
+    return dict(version=ALLOCATOR_VERSION, width=model.projection.width,
+                depth=model.projection.depth, capacity=model.active.capacity if model.active else 0,
+                initialized_state_bytes=initial, state_bound_bytes=bound,
+                bookkeeping_reserve_bytes=bound - initial, margin_bytes=STATE_MARGIN_BYTES,
+                max_updates=MAX_UPDATES)
+
+
 def budgeted(method, budget, n_train, seed=42, *, eta=.1, schedule='inverse_time', tau=None):
-    # Fixed pilot settings, selected before data-dependent outcomes. A margin
-    # covers scalar object de-aliasing as t/n change; allocated buffers never grow.
+    # Preserve the active/sketch split; reserve worst-case bookkeeping growth in
+    # addition to (not out of) the existing final-check margin.
     capacity = 0
     if method in ('awm', 'mission'):
         target = max(1, int((budget - 2048) * .45 / 48))
@@ -320,7 +362,7 @@ def budgeted(method, budget, n_train, seed=42, *, eta=.1, schedule='inverse_time
         width = (lo + hi) // 2
         candidate = Learner(method, width, depth=depth, capacity=capacity,
                             seed=seed, lam=lam, budget=budget, eta=eta, schedule=schedule, tau=tau)
-        if candidate.state_bytes() + 512 <= budget:
+        if allocation_bound(candidate) + STATE_MARGIN_BYTES <= budget:
             best, lo = width, width + 1
         else:
             hi = width - 1

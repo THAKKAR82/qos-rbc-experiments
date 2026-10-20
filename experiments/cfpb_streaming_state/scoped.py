@@ -19,18 +19,20 @@ import argparse
 import csv
 import json
 import math
+import platform
 import subprocess
 import sys
 import time
 import uuid
 from datetime import datetime, timezone
+from importlib.metadata import version
 from pathlib import Path
 
 import numpy as np
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 
 from .data import ROOT, TASKS, atomic_json, sha256
-from .methods import budgeted
+from .methods import ALLOCATOR_VERSION, STATE_MARGIN_BYTES, allocation_metadata, budgeted
 
 SCOPED_TASKS = {
     "credit_vs_checking": TASKS["credit_vs_checking"],
@@ -159,11 +161,14 @@ def run_cell(cell, train_rows, val_rows, *, ref_predictions, featurizer_bytes, c
     yv = np.array([r[2] for r in val_rows], dtype=int)
     ref = np.asarray(ref_predictions, dtype=int)
     t0 = time.perf_counter()
+    allocations = {"tuning": {}, "evaluation": {}}
 
-    def make(c, seed):
+    def make(c, seed, phase):
         spec = candidates[c]
-        return budgeted(cell["method"], cell["budget_bytes"], n, seed=seed, eta=spec["eta"],
-                        schedule=spec["schedule"], tau=n if spec["schedule"] == "inverse_sqrt" else None)
+        model = budgeted(cell["method"], cell["budget_bytes"], n, seed=seed, eta=spec["eta"],
+                         schedule=spec["schedule"], tau=n if spec["schedule"] == "inverse_sqrt" else None)
+        allocations[phase][str(c if phase == "tuning" else seed)] = allocation_metadata(model)
+        return model
 
     models, done, diverged = {}, {}, set()
 
@@ -171,7 +176,7 @@ def run_cell(cell, train_rows, val_rows, *, ref_predictions, featurizer_bytes, c
         if c in diverged:
             return -math.inf
         if c not in models:
-            models[c], done[c] = make(c, tuning_seed), 0
+            models[c], done[c] = make(c, tuning_seed, "tuning"), 0
         try:
             _train(models[c], train_rows, done[c], passes, check)
         except FloatingPointError:
@@ -185,7 +190,7 @@ def run_cell(cell, train_rows, val_rows, *, ref_predictions, featurizer_bytes, c
     learner_bytes = max(m.state_bytes() for m in models.values())
     evaluation = []
     for seed in evaluation_seeds:
-        m, passes_done, curve = make(selected, seed), 0, []
+        m, passes_done, curve = make(selected, seed, "evaluation"), 0, []
         status = "completed"
         try:
             for p in EVAL_CHECKPOINT_PASSES:
@@ -202,9 +207,12 @@ def run_cell(cell, train_rows, val_rows, *, ref_predictions, featurizer_bytes, c
                                primary=dict(accuracy=curve[-1]["accuracy"] if curve else float("nan"),
                                             balanced_accuracy=curve[-1]["balanced_accuracy"] if curve else float("nan")),
                                predictions=pred.tolist()))
-    if learner_bytes + 512 > cell["budget_bytes"]:
-        raise MemoryError("learner state exceeded its byte ceiling")
+    if learner_bytes + STATE_MARGIN_BYTES > cell["budget_bytes"]:
+        raise MemoryError(f"{cell['id']}: learner state {learner_bytes} + margin "
+                          f"{STATE_MARGIN_BYTES} exceeds budget {cell['budget_bytes']} bytes "
+                          f"(allocator {ALLOCATOR_VERSION})")
     return dict(**cell, status="completed", selected_candidate=selected, selected_config=candidates[selected],
+                allocator_version=ALLOCATOR_VERSION, allocations=allocations,
                 tuning=dict(rungs=[dict(passes=r["passes"], survivors=r["survivors"],
                                         scores={str(k): v for k, v in r["scores"].items()}) for r in sh["rungs"]],
                             diverged=sorted(diverged)),
@@ -235,26 +243,86 @@ def prepare_stage(output):
     return prepare(output, tasks=SCOPED_TASKS, reference_predictions=True)
 
 
+def _source_hashes():
+    return {str(p.relative_to(ROOT)): sha256(p)
+            for p in sorted((ROOT / "experiments/cfpb_streaming_state").glob("*.py"))}
+
+
+def _environment():
+    # Object sizes and scalar interning are interpreter/platform dependent.
+    return dict(python=sys.version, platform=platform.platform(), byteorder=sys.byteorder,
+                packages={p: version(p) for p in ("numpy", "scipy", "pandas", "scikit-learn")})
+
+
+def validate_resume(out):
+    """Fail closed before any writes, preparation, fitting, or checkpoint skips."""
+    out = Path(out)
+    manifest = json.loads((out / "manifest.json").read_text())
+    if manifest.get("allocator_version") != ALLOCATOR_VERSION:
+        raise ValueError("Incompatible allocator provenance: preserve this run and start a new scoped run; "
+                         "legacy checkpoints cannot be mixed with bookkeeping-v2 allocations")
+    if manifest.get("source_sha256") != _source_hashes():
+        raise ValueError("Cannot resume or analyze after changing execution source; preserve the run")
+    if manifest.get("environment") != _environment():
+        raise ValueError("Cannot resume or analyze with a different allocation/numerical environment")
+    if json.loads((out / "run_plan.json").read_text()) != json.loads(json.dumps(plan())):
+        raise ValueError("Cannot change the approved scoped grid on resume")
+    prep_path = out / "preparation.json"
+    if prep_path.exists():
+        if manifest.get("preparation_sha256") != sha256(prep_path):
+            raise ValueError("Preparation integrity/provenance mismatch")
+        prep = json.loads(prep_path.read_text())
+        for spools in prep["spools"].values():
+            for info in spools.values():
+                path = out / info["path"]
+                if (sha256(path) != info["sha256"]
+                        or sha256(path.with_suffix(".offsets.npy")) != info["offsets_sha256"]):
+                    raise ValueError(f"Replay spool integrity failure: {info['path']}")
+    elif manifest.get("preparation_sha256"):
+        raise ValueError("Missing preparation artifact")
+    paths = {p.stem: p for p in (out / "cells").glob("*.json")}
+    expected = manifest.get("completed_cells_sha256", {})
+    if set(paths) != set(expected):
+        raise ValueError("Checkpoint ledger mismatch; preserve all files for explicit recovery review")
+    approved = {c["id"]: c for c in plan()["cells"]}
+    for cell_id, path in paths.items():
+        if sha256(path) != expected[cell_id]:
+            raise ValueError(f"Checkpoint integrity failure: {cell_id}")
+        cell = json.loads(path.read_text())
+        if (cell_id not in approved or cell.get("status") != "completed"
+                or any(cell.get(k) != v for k, v in approved[cell_id].items())
+                or cell.get("allocator_version") != ALLOCATOR_VERSION
+                or cell.get("run_id") != manifest["run_id"]
+                or cell.get("source_sha256") != manifest["source_sha256"]):
+            raise ValueError(f"Incompatible checkpoint provenance: {cell_id}")
+        allocations = cell.get("allocations", {})
+        if not allocations.get("tuning") or not allocations.get("evaluation"):
+            raise ValueError(f"Missing allocation dimensions: {cell_id}")
+        for phase in ("tuning", "evaluation"):
+            for a in allocations[phase].values():
+                if (a["version"] != ALLOCATOR_VERSION or a["margin_bytes"] != STATE_MARGIN_BYTES
+                        or a["state_bound_bytes"] + STATE_MARGIN_BYTES > cell["budget_bytes"]):
+                    raise ValueError(f"Incompatible allocation bound: {cell_id}")
+    return manifest
+
+
 def run(resume=None):
     from src.cfpb_prepare import check_resources
     from .data import Encoder
     from .state import totals
-    check_resources(before_stage=True)
     if resume:
         out = (ROOT / resume).resolve()
-        manifest = json.loads((out / "manifest.json").read_text())
-        if json.loads((out / "run_plan.json").read_text()) != json.loads(json.dumps(plan())):
-            raise ValueError("Cannot change the approved scoped grid on resume")
+        manifest = validate_resume(out)
     else:
         now = datetime.now(timezone.utc)
         run_id = now.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
         out = ROOT / "results/classical_streaming" / f"scoped_{run_id}"
         (out / "cells").mkdir(parents=True)
         (out / "data_cache").mkdir()
-        srcs = sorted((ROOT / "experiments/cfpb_streaming_state").glob("*.py"))
         manifest = dict(run_id=run_id, started_utc=now.isoformat(), interpretation=INTERPRETATION,
                         git_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip(),
-                        source_sha256={str(p.relative_to(ROOT)): sha256(p) for p in srcs},
+                        source_sha256=_source_hashes(), allocator_version=ALLOCATOR_VERSION,
+                        environment=_environment(), completed_cells_sha256={},
                         excluded_methods=EXCLUDED, test_access=False,
                         harness_cache="per (task, track) encoded-row cache in memory; harness infrastructure, "
                                       "not learner state (like the on-disk spools)",
@@ -264,10 +332,20 @@ def run(resume=None):
         atomic_json(out / "run_plan.json", plan())
         atomic_json(out / "manifest.json", manifest)
     started = time.perf_counter()
+    stage, current_cell = "resource preflight", None
     try:
+        check_resources(before_stage=True)
+        manifest["status"] = "running"
+        manifest.pop("interruption", None)
+        manifest.pop("interruption_type", None)
+        manifest.pop("interrupted_cell", None)
+        stage = "preparation"
         if not (out / "preparation.json").exists():
             prepare_stage(out)
+        manifest["preparation_sha256"] = sha256(out / "preparation.json")
+        atomic_json(out / "manifest.json", manifest)
         prep = json.loads((out / "preparation.json").read_text())
+        stage = "featurizer allocation"
         featurizer = {track: totals(Encoder(track).state_inventory())["bytes"] for track in TRACKS}
         manifest["featurizer_state_bytes"] = featurizer
         for task in SCOPED_TASKS:
@@ -278,30 +356,44 @@ def run(resume=None):
                          and not (out / "cells" / f"{c['id']}.json").exists()]
                 if not cells:
                     continue
+                stage = f"encoding {task}/{track}"
+                current_cell = None
                 encoder = Encoder(track)
                 train = _encode_rows(out / sp["train"]["path"], sp["train"]["N"], encoder, "train", False)
                 val = _encode_rows(out / sp["validation"]["path"], sp["validation"]["N"], encoder, "validation", True)
                 if [r[2] for r in val] != prep["references"][task]["primary_labels"]:
                     raise ValueError("Validation order/labels differ from the Ridge reference")
                 for c in cells:
+                    stage, current_cell = "training/evaluation", c["id"]
                     result = run_cell(c, train, val, ref_predictions=ref, featurizer_bytes=featurizer[track],
                                       check=check_resources)
                     result["stream_access_note"] = "chronological replay of the harness cache; no N-sized order array"
-                    atomic_json(out / "cells" / f"{c['id']}.json", result)
+                    result["run_id"] = manifest["run_id"]
+                    result["source_sha256"] = manifest["source_sha256"]
+                    cell_path = out / "cells" / f"{c['id']}.json"
+                    atomic_json(cell_path, result)
+                    manifest["completed_cells_sha256"][c["id"]] = sha256(cell_path)
+                    atomic_json(out / "manifest.json", manifest)
                     print("cell", c["id"], f"{result['seconds']:.0f}s", flush=True)
         manifest["status"] = "cells_completed"
-    except RuntimeError as exc:
-        manifest["status"], manifest["interruption"] = "interrupted", str(exc)
+        stage, current_cell = "analysis", None
+        analyze(out)
+    except (RuntimeError, MemoryError, ValueError, OverflowError, KeyboardInterrupt) as exc:
+        manifest["status"] = "interrupted"
+        manifest["interruption_type"] = type(exc).__name__
+        manifest["interrupted_cell"] = current_cell
+        detail = str(exc) or "execution interrupted without an error message"
+        manifest["interruption"] = f"{type(exc).__name__} during {stage}: {detail}"
         raise
     finally:
         manifest["wall_seconds"] = manifest.get("wall_seconds", 0.0) + time.perf_counter() - started
         atomic_json(out / "manifest.json", manifest)
-    analyze(out)
     return out
 
 
 def analyze(out):
     out = Path(out)
+    validate_resume(out)
     prep = json.loads((out / "preparation.json").read_text())
     cells = {p.stem: json.loads(p.read_text()) for p in sorted((out / "cells").glob("*.json"))}
     kstar_rows, ret_rows, state_rows = [], [], []

@@ -123,4 +123,9 @@ Run from the repository root under caffeinate, only when no other heavy job is r
     caffeinate -i .venv/bin/python -m experiments.cfpb_streaming_state.scoped run
     caffeinate -i .venv/bin/python -m experiments.cfpb_streaming_state.scoped run --resume results/classical_streaming/scoped_<id>
 
-A memory or swap gate failure stops the run cleanly. Completed cells are kept, and resume skips them.
+A memory or swap gate failure stops the run and records its stage/error in the manifest.
+Resume skips completed cells only after checking allocator version, execution-source and
+environment fingerprints, preparation/spool hashes, and the checkpoint ledger.
+The legacy `scoped_20261020T142519Z-60752b83` run must remain unchanged and cannot resume
+under the corrected allocator. See [ALLOCATION_FIX.md](ALLOCATION_FIX.md) for the failure,
+compatibility assessment, validation evidence, and replacement/resume commands.

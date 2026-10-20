@@ -3,6 +3,7 @@
 Light synthetic fixtures only (no CFPB data, no full encoder vocabulary load).
 """
 import math
+import json
 from pathlib import Path
 import sys
 
@@ -11,7 +12,9 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from experiments.cfpb_streaming_state import scoped as sc
-from experiments.cfpb_streaming_state.methods import Learner, budgeted
+from experiments.cfpb_streaming_state.methods import (
+    ALLOCATOR_VERSION, Learner, allocation_metadata, budgeted,
+)
 
 
 def keys(ids):
@@ -60,7 +63,7 @@ def test_schedule_survives_snapshot_restore_and_old_snapshots_default():
 
 
 @pytest.mark.parametrize("method", ["hash_sgd", "sparse_jl_sgd", "awm"])
-@pytest.mark.parametrize("kib", [4, 16, 512])
+@pytest.mark.parametrize("kib", [4, 16, 32, 64, 128, 512])
 def test_budgeted_passes_eta_schedule_and_fits_every_budget(method, kib):
     m = budgeted(method, kib * 1024, 1000, seed=2026, eta=0.03, schedule="inverse_sqrt", tau=1000)
     assert m.eta0 == 0.03 and m.schedule == "inverse_sqrt"
@@ -148,6 +151,11 @@ def test_run_cell_tiny_synthetic_end_to_end():
     assert len(out["evaluation"]) == 3 and all(len(e["predictions"]) == 40 for e in out["evaluation"])
     assert out["learner_state_bytes"] + 512 <= 4096 and out["featurizer_state_bytes"] == 123
     assert out["selected_candidate"] in range(8)
+    assert out["allocator_version"] == ALLOCATOR_VERSION
+    assert len(out["allocations"]["tuning"]) == 8
+    assert len(out["allocations"]["evaluation"]) == 3
+    for phase in out["allocations"].values():
+        assert all(a["state_bound_bytes"] + 512 <= 4096 for a in phase.values())
     assert all(0 <= e["primary"]["accuracy"] <= 1 for e in out["evaluation"])
 
 
@@ -160,7 +168,6 @@ def test_task_mask_uses_supplied_task_set():
 
 
 def test_analyze_writes_kstar_retention_and_separate_state_tables(tmp_path, monkeypatch):
-    import json
     monkeypatch.setattr(sc, "SCOPED_TASKS", {"toy": dict(positive=1, negative=2, N=10, validation_N=40)})
     monkeypatch.setattr(sc, "TRACKS", ("B_causal",))
     monkeypatch.setattr(sc, "METHODS", ("hash_sgd",))
@@ -168,7 +175,7 @@ def test_analyze_writes_kstar_retention_and_separate_state_tables(tmp_path, monk
     monkeypatch.setattr(sc, "N_BOOT", 50)
     y = [1, -1] * 20
     (tmp_path / "preparation.json").write_text(json.dumps(
-        {"references": {"toy": {"primary_labels": y, "selected_primary_predictions": y}}}))
+        {"spools": {}, "references": {"toy": {"primary_labels": y, "selected_primary_predictions": y}}}))
     (tmp_path / "cells").mkdir()
     for b, wrong in ((4096, 8), (16384, 0)):
         p = list(y); p[:wrong] = [-v for v in p[:wrong]]
@@ -176,7 +183,9 @@ def test_analyze_writes_kstar_retention_and_separate_state_tables(tmp_path, monk
                     budget_bytes=b, selected_config=dict(eta=0.1, schedule="inverse_time"),
                     learner_state_bytes=b - 600, featurizer_state_bytes=47939,
                     evaluation=[dict(seed=s, predictions=p) for s in (42, 123, 456)])
+        _stamp_cell(cell)
         (tmp_path / "cells" / f"{cell['id']}.json").write_text(json.dumps(cell))
+    _write_run_provenance(tmp_path)
     out = sc.analyze(tmp_path)
     k95 = next(r for r in out["kstar"] if r["threshold"] == 0.95)
     assert k95["k_star_bytes"] == 16384
@@ -185,3 +194,157 @@ def test_analyze_writes_kstar_retention_and_separate_state_tables(tmp_path, monk
     assert st[4096]["total_persistent_bytes"] == 3496 + 47939
     for name in ("kstar.csv", "retention.csv", "state.csv"):
         assert (tmp_path / name).exists()
+
+
+def _stamp_cell(cell):
+    a = allocation_metadata(budgeted(cell["method"], cell["budget_bytes"], 10))
+    cell.update(status="completed", allocator_version=ALLOCATOR_VERSION, run_id="synthetic",
+                source_sha256=sc._source_hashes(),
+                allocations={"tuning": {"0": a}, "evaluation": {"42": a}})
+    return cell
+
+
+def _write_run_provenance(out):
+    sc.atomic_json(out / "run_plan.json", sc.plan())
+    sc.atomic_json(out / "manifest.json", dict(
+        allocator_version=ALLOCATOR_VERSION, source_sha256=sc._source_hashes(),
+        environment=sc._environment(), run_id="synthetic", status="interrupted",
+        preparation_sha256=sc.sha256(out / "preparation.json"),
+        completed_cells_sha256={p.stem: sc.sha256(p) for p in (out / "cells").glob("*.json")}))
+
+
+def _files(out):
+    return {p.relative_to(out): p.read_bytes() for p in out.rglob("*") if p.is_file()}
+
+
+@pytest.mark.parametrize("failure", ["legacy", "source", "environment", "cell_version", "cell_hash", "orphan"])
+def test_incompatible_resume_and_analysis_fail_before_writes(tmp_path, monkeypatch, failure):
+    (tmp_path / "cells").mkdir()
+    sc.atomic_json(tmp_path / "preparation.json", {"spools": {}})
+    cell = _stamp_cell(dict(sc.plan()["cells"][0]))
+    p = tmp_path / "cells" / f"{cell['id']}.json"
+    sc.atomic_json(p, cell)
+    _write_run_provenance(tmp_path)
+    manifest = json.loads((tmp_path / "manifest.json").read_text())
+    if failure == "legacy":
+        del manifest["allocator_version"]
+    elif failure == "source":
+        manifest["source_sha256"] = {}
+    elif failure == "environment":
+        manifest["environment"] = {}
+    elif failure == "cell_version":
+        cell["allocator_version"] = "legacy"
+        sc.atomic_json(p, cell)
+        manifest["completed_cells_sha256"][cell["id"]] = sc.sha256(p)
+    elif failure == "cell_hash":
+        p.write_text(p.read_text() + "\n")
+    elif failure == "orphan":
+        manifest["completed_cells_sha256"] = {}
+    sc.atomic_json(tmp_path / "manifest.json", manifest)
+    before = _files(tmp_path)
+    def forbidden(*args, **kwargs):
+        pytest.fail("Incompatible resume reached preparation/training/resource preflight")
+    monkeypatch.setattr(sc, "prepare_stage", forbidden)
+    monkeypatch.setattr(sc, "run_cell", forbidden)
+    monkeypatch.setattr("src.cfpb_prepare.check_resources", forbidden)
+    with pytest.raises(ValueError):
+        sc.run(tmp_path)
+    with pytest.raises(ValueError):
+        sc.analyze(tmp_path)
+    assert _files(tmp_path) == before
+
+
+@pytest.mark.parametrize("stage", ["preflight", "preparation", "encoding", "cell", "analysis"])
+@pytest.mark.parametrize("exception", [MemoryError, ValueError])
+def test_failure_marks_interrupted_and_preserves_completed_cells(tmp_path, monkeypatch, stage, exception):
+    monkeypatch.setattr(sc, "ROOT", tmp_path)
+    monkeypatch.setattr(sc, "SCOPED_TASKS", {"toy": dict(N=2, validation_N=2)})
+    monkeypatch.setattr(sc, "TRACKS", ("B_causal",))
+    monkeypatch.setattr(sc, "METHODS", ("hash_sgd",))
+    monkeypatch.setattr(sc, "BUDGETS", (4096, 16384))
+    monkeypatch.setattr(sc.subprocess, "check_output", lambda *a, **k: b"synthetic-test-commit")
+    rows = [(keys([1]), np.array([1.0]), 1), (keys([2]), np.array([1.0]), -1)]
+    def fail():
+        raise exception("synthetic accounting limit: measured + 512 exceeds budget")
+    def preflight(**kwargs):
+        if stage == "preflight":
+            fail()
+    def prepare(out):
+        if stage == "preparation":
+            fail()
+        spools = {}
+        for role in ("train", "validation"):
+            p = out / "data_cache" / f"{role}.jsonl"
+            p.write_text("synthetic spool")
+            p.with_suffix(".offsets.npy").write_bytes(b"synthetic offsets")
+            spools[role] = dict(path=str(p.relative_to(out)), N=2, sha256=sc.sha256(p),
+                                offsets_sha256=sc.sha256(p.with_suffix(".offsets.npy")))
+        sc.atomic_json(out / "preparation.json", dict(spools={"toy": spools}, references={
+            "toy": dict(primary_labels=[1, -1], selected_primary_predictions=[1, -1])}))
+    class Encoder:
+        def __init__(self, track):
+            pass
+        def state_inventory(self):
+            return []
+    def encode(*args):
+        if stage == "encoding":
+            fail()
+        return rows
+    saved = {}
+    def cell(c, *args, **kwargs):
+        if stage == "cell" and c["budget_bytes"] == 16384:
+            run_dir = next((tmp_path / "results/classical_streaming").glob("scoped_*"))
+            saved.update({p: p.read_bytes() for p in (run_dir / "cells").glob("*.json")})
+            fail()
+        return dict(_stamp_cell(dict(c)), seconds=0.0)
+    def analyze(out):
+        sc.validate_resume(out)
+        if stage == "analysis":
+            fail()
+    monkeypatch.setattr("src.cfpb_prepare.check_resources", preflight)
+    monkeypatch.setattr("experiments.cfpb_streaming_state.data.Encoder", Encoder)
+    monkeypatch.setattr(sc, "prepare_stage", prepare)
+    monkeypatch.setattr(sc, "_encode_rows", encode)
+    monkeypatch.setattr(sc, "run_cell", cell)
+    monkeypatch.setattr(sc, "analyze", analyze)
+    with pytest.raises(exception, match="synthetic accounting limit"):
+        sc.run()
+    out = next((tmp_path / "results/classical_streaming").glob("scoped_*"))
+    manifest = json.loads((out / "manifest.json").read_text())
+    assert manifest["status"] == "interrupted" and manifest["interruption_type"] == exception.__name__
+    assert "synthetic accounting limit" in manifest["interruption"]
+    assert "during" in manifest["interruption"] and manifest["wall_seconds"] >= 0
+    assert {p: p.read_bytes() for p in saved} == saved
+    if stage == "cell":
+        assert len(saved) == len(manifest["completed_cells_sha256"]) == 1
+        assert manifest["interrupted_cell"] == sc.plan()["cells"][1]["id"]
+    # A matching interrupted run is eligible for resume; validation itself is read-only.
+    before = _files(out)
+    assert sc.validate_resume(out) == manifest
+    assert _files(out) == before
+    if stage == "cell":
+        resumed_cells = []
+        def finish(c, *args, **kwargs):
+            resumed_cells.append(c["id"])
+            return dict(_stamp_cell(dict(c)), seconds=0.0)
+        monkeypatch.setattr(sc, "run_cell", finish)
+        assert sc.run(out) == out
+        after = json.loads((out / "manifest.json").read_text())
+        assert after["status"] == "cells_completed" and "interruption" not in after
+        assert resumed_cells == [sc.plan()["cells"][1]["id"]]
+        assert {p: p.read_bytes() for p in saved} == saved
+        assert len(after["completed_cells_sha256"]) == 2
+
+
+def test_final_accounting_failure_reports_cell_state_margin_and_budget(monkeypatch):
+    # Deliberately bypass allocation to exercise the unchanged final check.
+    def oversized_dimensions(*args, **kwargs):
+        return Learner("awm", 3000, depth=3, capacity=512, eta=.1, lam=.5, budget=65536)
+    monkeypatch.setattr(sc, "budgeted", oversized_dimensions)
+    rows = [(keys([1, 2]), np.array([.6, .8]), y) for y in (1, -1)]
+    cell = dict(id="synthetic_64k_failure", method="awm", budget_bytes=65536)
+    with pytest.raises(MemoryError, match=r"synthetic_64k_failure: learner state \d+ \+ margin 512 "
+                                         r"exceeds budget 65536 bytes"):
+        sc.run_cell(cell, rows, rows, ref_predictions=[1, -1], featurizer_bytes=0,
+                    candidates=[dict(eta=.1, schedule="inverse_time")],
+                    halving=[[1, 1]], evaluation_seeds=[42])
