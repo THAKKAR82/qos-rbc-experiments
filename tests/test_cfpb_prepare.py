@@ -48,3 +48,39 @@ def test_preparation_counts_membership_and_rebuild_determinism(tmp_path, monkeyp
     assert manifest["source_sha256_after"] == manifest["source_sha256"]
     assert manifest["status"] == "text_validated"
     assert not list(first.glob("*.npz"))
+
+
+VM_STAT = """Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                     7654.
+Pageins:                                      979764.
+Pageouts:                                       9036.
+Swapins:                                          12.
+Swapouts:                                         30.
+"""
+
+
+def test_vm_stat_swap_counts_swap_not_file_pageins():
+    assert cfpb_prepare._vm_stat_swap_pages(VM_STAT) == 42
+
+
+def _gate_with_counters(monkeypatch, counters):
+    values = iter(counters)
+    clock = iter(range(10, 100, 2))
+    monkeypatch.setattr(cfpb_prepare, "_RESOURCE_STATE", {})
+    monkeypatch.setattr(cfpb_prepare, "_swap_counter", lambda: next(values))
+    monkeypatch.setattr(cfpb_prepare.time, "monotonic", lambda: next(clock))
+
+
+def test_gate_ignores_flat_swap_counter(monkeypatch):
+    _gate_with_counters(monkeypatch, [5] * 6)
+    for _ in range(6):
+        cfpb_prepare.check_resources()
+
+
+def test_gate_stops_on_three_successive_swap_increases(monkeypatch):
+    import pytest
+    _gate_with_counters(monkeypatch, [5, 6, 7, 8])
+    for _ in range(3):
+        cfpb_prepare.check_resources()
+    with pytest.raises(RuntimeError, match="swap I/O"):
+        cfpb_prepare.check_resources()

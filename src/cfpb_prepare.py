@@ -53,6 +53,20 @@ def git_commit(directory):
     return result.stdout.strip() if result.returncode == 0 else None
 
 
+def _vm_stat_swap_pages(text):
+    """Swapins + Swapouts from macOS vm_stat; Pageins/Pageouts also count ordinary file I/O."""
+    fields = dict(line.split(":", 1) for line in text.splitlines() if ":" in line)
+    return sum(int(fields[k].strip().rstrip(".")) for k in ("Swapins", "Swapouts"))
+
+
+def _swap_counter():
+    # psutil's macOS sin/sout are vm_stat Pageins/Pageouts, which rise with file reads even without swap.
+    if sys.platform == "darwin":
+        return _vm_stat_swap_pages(subprocess.run(["vm_stat"], capture_output=True, text=True, check=True).stdout)
+    swap = psutil.swap_memory()
+    return swap.sin + swap.sout
+
+
 def check_resources(*, before_stage=False):
     available = psutil.virtual_memory().available
     rss = psutil.Process().memory_info().rss
@@ -61,11 +75,10 @@ def check_resources(*, before_stage=False):
     now = time.monotonic()
     if _RESOURCE_STATE.get("swap_available") is not False and now - _RESOURCE_STATE.get("sample_time", 0) >= 1:
         try:
-            swap = psutil.swap_memory()
-        except (OSError, PermissionError) as exc:
+            counter = _swap_counter()
+        except (OSError, PermissionError, subprocess.CalledProcessError, KeyError, ValueError) as exc:
             _RESOURCE_STATE.update(swap_available=False, swap_error=str(exc))
         else:
-            counter = swap.sin + swap.sout
             previous = _RESOURCE_STATE.get("swap_counter", counter)
             rising = _RESOURCE_STATE.get("rising_samples", 0) + 1 if counter > previous else 0
             _RESOURCE_STATE.update(swap_available=True, swap_counter=counter,
