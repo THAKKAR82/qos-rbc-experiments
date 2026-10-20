@@ -3,14 +3,14 @@
 Date: 2026-10-20. **Label: back-of-envelope resource estimate.**
 Generator: `scripts/qrom_vs_qos.py`. Output: [`results/audit/qrom_vs_qos/`](../results/audit/qrom_vs_qos/) (`qrom_costs.csv`, plus `summary.json` with input and output hashes). Formula tests: `tests/test_qrom_formulas.py`.
 
-## Framing
+## Headline finding
 
-**QOS saves the ~9–13 MB stored table at the cost of ~10²⁴–10²⁵ samples per block-encoding query.**
+**Every single block-encoding query costs QOS about 4×10¹⁸ passes over the CFPB training matrix. A finite dataset therefore has to be stored and re-streamed anyway, so the storage QOS is meant to save is not saved.**
 
-- **The table.** CSR (values plus column indices plus row pointers) is 9.4 MB. Adding the CSC column-access copy makes it 12.8 MB.
-- **What a query costs QOS.** About 6×10²⁴ samples per A/2 query, at the measured exponent s^3.15 and ε = 10⁻². That is about 4×10¹⁸ re-reads of every nonzero, for one query.
-- **What a query costs QROM.** A QROM loader touches the whole table **once** per query: 10⁵–10⁶ Toffoli per A/s query in practical dirty-qubit regimes.
-- **QOS does not avoid storage in practice.** Its samples must come from a re-streamable source, so the bank still holds the data. Producing frozen-TF-IDF samples also needs the 8.2 MB featurizer state, the same cost the classical streaming study measured.
+- **The QOS cost.** About 6×10²⁴ samples per A/2 query, at the measured exponent s^3.15 and ε = 10⁻². Divided by the 1,563,584 nonzeros, that is **≈ 4×10¹⁸ re-reads of every nonzero, per query**, before multiplying by the solver's query count.
+- **Why storage isn't avoided.** No finite data source can be sampled that many times except by replaying stored data. The bank keeps the full dataset either way. Producing frozen-TF-IDF samples also requires the 8.2 MB featurizer state measured in the classical streaming study.
+- **The QROM cost.** QROM stores the same table (9.4 MB CSR; 12.8 MB with the CSC column-access copy) and reads it **once** per query, at 10⁵–10⁶ Toffoli per A/s query in practical dirty-qubit regimes.
+- **So:** QOS saves the ~9–13 MB stored table only inside the quantum machine, at the cost of ~10²⁴–10²⁵ samples per query drawn from a source that must itself be stored.
 
 ## The matrix
 
@@ -70,7 +70,7 @@ L = table entries, b = bits per entry, λ = power-of-two block size.
 | Dense encoding | 3.3e+07 / 8.2e+06 / 6.0e+05 | 28,672 | 1.5e+11 |
 | Dense + sequential (opt. μ) | 1.6e+07 / 4.1e+06 / 6.0e+05 | 28,672 | 1.5e+11 |
 
-The A/2 column multiplies the A/s cost by the D.23 amplification degree that my construction measured, about 28.7·s ≈ 2.5×10⁵ at s = 8,776. That puts QROM on the same footing as QOS's per-A/2 figure. **A QROM-based solver does not need D.23 amplification**: it can absorb the subnormalization s into its condition number. So the A/s column is the natural QROM figure.
+**The A/s → A/2 amplification is counted for both methods.** The 1/s subnormalization comes from the sparse-oracle block-encoding construction (Lemma D.22 / Lemma 48: one query each to the row-index, column-index and element oracles yields A/s). That holds whether those oracles are QROM lookups or QOS sketches. Any solver built on this construction pays the factor s somewhere: either as Theorem D.23's degree-O(s) amplification to A/2, or as an s-times-larger effective condition number in its own polynomial degree. So the A/2 column multiplies the A/s cost by the same amplification degree for both methods: my measured D.23 polynomial degree, about 28.7·s ≈ 2.5×10⁵ at s = 8,776. Because the factor is identical, it cancels in the comparison. The A/s and A/2 columns therefore give the same QROM-to-QOS ratio, and the A/2 column matches the unit of the QOS per-query figure. A QROM loader could instead feed a different block-encoding family (for example one with Frobenius-norm subnormalization). That would be a different construction, outside this comparison.
 
 ## QOS cost per query
 
@@ -90,7 +90,7 @@ From [docs/empirical_f61.md](empirical_f61.md) (one-vs-rest matrix, s = 8,776, p
 |---|---|---|
 | Unit | Toffoli gates | data samples |
 | Per A/s query | 1.3×10⁵ | not separately computed |
-| Per A/2 query | 3.3×10¹⁰ (with D.23 amplification, which QROM doesn't need) | 6×10²⁴ – 1×10²⁵ |
+| Per A/2 query | 3.3×10¹⁰ (with D.23 amplification, counted for both: it is a property of the sparse block encoding) | 6×10²⁴ – 1×10²⁵ |
 | Quantum memory | about 1,080 qubits: 1,024 borrowed dirty, 21 address, up to 32 output, ≤ 21 clean helpers | about 52 logical qubits (A9 accounting) |
 | Must the data be stored? | Yes: the classical controller holds the 9–13 MB table and reads all of it once per query, as Clifford-specified loads | Not in the machine. In practice the source must be re-streamed about 4×10¹⁸ times per query, plus the 8.2 MB featurizer |
 
