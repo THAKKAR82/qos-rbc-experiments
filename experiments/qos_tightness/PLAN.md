@@ -81,3 +81,11 @@ provisional analytical accounting. This gate's artifacts are isolated under
 | Solver queries | F87 | Q₀ = O(κ² log²(κ/ε)) |
 | Readout precision / queries | F94–F96, F90/F92 | ε = γ/(3√s); O(s·(min{s log D, log m} + log 1/δ)/γ²) |
 | Total | F97–F104 | M = Õ(RN s⁷ κ⁴ γ⁻⁴ δ⁻¹ min{s² log² D, log² m}) |
+
+## Phase (b) cancelled (2026-10-20)
+
+Phase (b) is cancelled; the QOS investigation is closing. See
+[docs/decisions/phase_b_cancelled.md](../../docs/decisions/phase_b_cancelled.md)
+for the reason and the explicit list of what remains untested
+(κ/γ/δ end to end, reusable shadow readout, solver composition,
+explicit sampling, CFPB toy, element-oracle exponent).
