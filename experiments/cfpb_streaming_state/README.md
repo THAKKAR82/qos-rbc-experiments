@@ -99,3 +99,28 @@ those future real-data controls. Frozen preprocessing A sees all January;
 causal feature construction B changes the representation. Neither track undoes
 the frozen population's offline curation. Balanced training is not run or pooled
 with these unweighted results.
+
+## Scoped benchmark (approved 2026-10-20; ~5.7 h projected)
+
+`scoped.py` runs 108 cells: 3 tasks (credit_vs_checking, checking_vs_mortgage, mortgage_vs_rest)
+× 2 featurizer tracks (A frozen TF-IDF, B causal) × 3 methods (hashing, sparse JL, AWM) × 6 learner
+budgets (4/16/32/64/128/512 KiB), chronological order, validation only. Per cell:
+
+- successive-halving tuning on seed 2026: 8 candidates (eta0 {0.03, 0.1, 0.3, 1} × inverse-time /
+  inverse-sqrt, tau = N), 8 at 1 pass → 4 at 2 → 2 at 5, selected by joint validation retention;
+- the selected configuration on evaluation seeds 42/123/456 through 5 passes.
+
+`analyze` gives k* at 95%/98% joint retention (paired bootstrap, 2,000 replicates), plus retention
+CIs per budget. Learner, featurizer and total state are kept separate.
+
+- **MISSION is excluded**, and the reason is recorded in the manifest.
+- **Encoded-row cache:** each (task, track) is encoded once into memory. This is harness
+  infrastructure, not learner state.
+- **Inverse-sqrt schedule:** added to `Learner`; the default inverse-time behaviour is unchanged.
+
+Run from the repository root under caffeinate, only when no other heavy job is running:
+
+    caffeinate -i .venv/bin/python -m experiments.cfpb_streaming_state.scoped run
+    caffeinate -i .venv/bin/python -m experiments.cfpb_streaming_state.scoped run --resume results/classical_streaming/scoped_<id>
+
+A memory or swap gate failure stops the run cleanly. Completed cells are kept, and resume skips them.

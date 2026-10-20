@@ -41,7 +41,10 @@ def verify_frozen():
     return count
 
 
-def prepare(output):
+def prepare(output, tasks=None, reference_predictions=False):
+    """tasks: task-spec mapping (default: the pilot's TASKS). reference_predictions: also store the
+    selected Ridge model's per-example primary-validation predictions (needed for paired bootstraps)."""
+    tasks = TASKS if tasks is None else tasks
     output = Path(output); cache = output / 'data_cache'; cache.mkdir(exist_ok=True)
     timings = []
     with measured('source_integrity_and_train_validation_rehydration', timings):
@@ -104,8 +107,8 @@ def prepare(output):
         audit = pd.read_csv(ROOT / 'results/audit/cfpb_step1/summary.csv',
                             usecols=['task_id', 'alpha', 'sigma_max', 'val_accuracy', 'val_balanced_accuracy'])
         references, spool_info = {}, {}
-        for task, spec in TASKS.items():
-            tm, vm = task_mask(train.label.to_numpy(), task), task_mask(val.label.to_numpy(), task)
+        for task, spec in tasks.items():
+            tm, vm = task_mask(train.label.to_numpy(), task, tasks), task_mask(val.label.to_numpy(), task, tasks)
             tr, va = train[tm], val[vm]
             xt, xv = X[tm].astype(np.float64), V[vm].astype(np.float64)
             yt = np.where(tr.label == spec['positive'], 1, -1)
@@ -133,16 +136,23 @@ def prepare(output):
                 if residual > 1e-7:
                     raise ValueError('Ridge normal-equation residual too large')
                 options.append(dict(alpha=alpha, primary=metrics, natural_stream=score(yv[natural], pred[natural]),
+                                    _primary_predictions=pred[primary].astype(int).tolist(),
                                     lsqr_iterations=int(raw[2]), normal_equation_residual=float(residual),
                                     scaled_unscaled_max_logit_difference=float(np.max(np.abs(logits-comparison))),
                                     fit_and_equivalence_seconds=time.perf_counter()-fit_start,
                                     model_coefficient_bytes=int(raw[0].nbytes), model_allocated_bytes=deep_bytes(raw[0])))
             chosen = min(options, key=lambda r: (-r['primary']['accuracy'], -r['alpha']))
+            chosen_predictions = chosen['_primary_predictions']
+            for o in options:
+                o.pop('_primary_predictions')
             majority = 1 if np.count_nonzero(yt == 1) >= np.count_nonzero(yt == -1) else -1
             references[task] = dict(selected_alpha=chosen['alpha'], selected=chosen, alpha_sweep=options,
                                     majority_primary=score(yv[primary], np.full(primary.sum(), majority)),
                                     task=spec, balanced_model=False, fit_intercept=False,
                                     reference_kind='non-streaming full frozen-feature Ridge')
+            if reference_predictions:
+                references[task]['selected_primary_predictions'] = chosen_predictions
+                references[task]['primary_labels'] = yv[primary].astype(int).tolist()
             spool_info[task] = {}
             for name, frame in [('train', tr), ('validation', va)]:
                 path = cache / f'{task}_{name}.jsonl'

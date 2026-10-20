@@ -164,13 +164,21 @@ class IndexedHeap:
 
 
 class Learner:
-    __slots__ = ('method', 'weights', 'projection', 'active', 'scale', 't', 'eta0', 'lam', 'budget')
+    __slots__ = ('method', 'weights', 'projection', 'active', 'scale', 't', 'eta0', 'lam', 'budget',
+                 'schedule', 'tau')
+    SCHEDULES = ('inverse_time', 'inverse_sqrt')
 
-    def __init__(self, method, width, *, depth=3, capacity=0, seed=42, eta=.1, lam=0., budget=2**63-1):
+    def __init__(self, method, width, *, depth=3, capacity=0, seed=42, eta=.1, lam=0., budget=2**63-1,
+                 schedule='inverse_time', tau=None):
         if method not in ('hash_sgd', 'sparse_jl_sgd', 'awm', 'mission', 'identity_sgd'):
             raise ValueError('Unknown method')
         if method == 'mission' and lam != 0:
             raise ValueError('Native MISSION does not implement L2 regularization')
+        if schedule not in self.SCHEDULES:
+            raise ValueError('Unknown step-size schedule')
+        if schedule == 'inverse_sqrt' and not (tau and tau > 0):
+            raise ValueError('inverse_sqrt needs a positive time offset tau')
+        self.schedule, self.tau = schedule, float(tau) if tau else 0.
         self.method, self.eta0, self.lam, self.budget = method, float(eta), float(lam), int(budget)
         self.scale, self.t = 1., 0
         depth = 1 if method in ('hash_sgd', 'identity_sgd') else depth
@@ -212,12 +220,18 @@ class Learner:
         indices, signs = self._features(keys, x)
         return self._prediction(keys, x, indices, signs)
 
+    def step_size(self, t):
+        """Pilot default eta0/(1+eta0*lam*t); optional eta0/sqrt(1+t/tau)."""
+        if self.schedule == 'inverse_time':
+            return self.eta0 / (1 + self.eta0 * self.lam * t)
+        return self.eta0 / math.sqrt(1 + t / self.tau)
+
     def update(self, keys, x, y):
         if y not in (-1, 1):
             raise ValueError('Binary ±1 label required')
         indices, signs = self._features(keys, x)
         pred = self._prediction(keys, x, indices, signs)
-        eta = self.eta0 / (1 + self.eta0 * self.lam * self.t)
+        eta = self.step_size(self.t)
         decay = 1 - eta * self.lam
         if decay <= 0:
             raise ValueError('Nonpositive lazy decay')
@@ -272,13 +286,14 @@ class Learner:
         meta = dict(method=self.method, width=self.projection.width, depth=self.projection.depth,
                     capacity=self.active.capacity if self.active else 0,
                     active_n=self.active.n if self.active else 0, scale=self.scale, t=self.t,
-                    eta=self.eta0, lam=self.lam, budget=self.budget)
+                    eta=self.eta0, lam=self.lam, budget=self.budget, schedule=self.schedule, tau=self.tau)
         return meta, arrays
 
     @classmethod
     def restore(cls, meta, arrays):
         obj = cls(meta['method'], meta['width'], depth=meta['depth'], capacity=meta['capacity'],
-                  eta=meta['eta'], lam=meta['lam'], budget=meta['budget'])
+                  eta=meta['eta'], lam=meta['lam'], budget=meta['budget'],
+                  schedule=meta.get('schedule', 'inverse_time'), tau=meta.get('tau') or None)
         obj.weights[:] = arrays['weights']
         obj.projection.seeds[:] = arrays['projection_seeds']
         obj.scale, obj.t = meta['scale'], meta['t']
@@ -290,7 +305,7 @@ class Learner:
         return obj
 
 
-def budgeted(method, budget, n_train, seed=42):
+def budgeted(method, budget, n_train, seed=42, *, eta=.1, schedule='inverse_time', tau=None):
     # Fixed pilot settings, selected before data-dependent outcomes. A margin
     # covers scalar object de-aliasing as t/n change; allocated buffers never grow.
     capacity = 0
@@ -304,11 +319,12 @@ def budgeted(method, budget, n_train, seed=42):
     while lo <= hi:
         width = (lo + hi) // 2
         candidate = Learner(method, width, depth=depth, capacity=capacity,
-                            seed=seed, lam=lam, budget=budget)
+                            seed=seed, lam=lam, budget=budget, eta=eta, schedule=schedule, tau=tau)
         if candidate.state_bytes() + 512 <= budget:
             best, lo = width, width + 1
         else:
             hi = width - 1
     if best is None:
         raise MemoryError('infeasible_state')
-    return Learner(method, best, depth=depth, capacity=capacity, seed=seed, lam=lam, budget=budget)
+    return Learner(method, best, depth=depth, capacity=capacity, seed=seed, lam=lam, budget=budget,
+                   eta=eta, schedule=schedule, tau=tau)

@@ -35,8 +35,8 @@ def atomic_json(path, value):
     tmp.replace(path)
 
 
-def task_mask(labels, task):
-    t = TASKS[task]
+def task_mask(labels, task, tasks=None):
+    t = (TASKS if tasks is None else tasks)[task]
     return np.ones(len(labels), bool) if t['negative'] is None else np.isin(labels, [t['positive'], t['negative']])
 
 
