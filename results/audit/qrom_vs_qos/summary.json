@@ -1,0 +1,47 @@
+{
+  "amplification_note": "QROM per-A/2 counts multiply the Lemma D.22 A/s query by our measured D.23 polynomial degree ~28.7*s = 2.52e+05 at s=8776; a QROM-based solver need not use D.23 amplification at all",
+  "date_utc": "2026-10-20T13:35:31.377435+00:00",
+  "inputs_sha256": {
+    "results/audit/empirical_f61/empirical_f61.csv": "e4b38b6fbadfffe2a57532d65f7f300dd23ff6a6f17cabf275f4865759ef9b8e"
+  },
+  "label": "back-of-envelope resource estimate",
+  "matrix": {
+    "D": 50000,
+    "N": 13459,
+    "bits": {
+      "col_index": 16,
+      "row_index": 14,
+      "value": 32
+    },
+    "nnz": 1563584,
+    "s_col": 8776,
+    "s_row": 1254,
+    "s_row_or_col": 8776
+  },
+  "outputs_sha256": {
+    "qrom_costs.csv": "fca0cd3878e981c44eca4c90df1ec24e4fe01ac7c6ec21e9d786f4d90854ecb7"
+  },
+  "qos_note": "extrapolated from N<=128, s<=32 simulation with measured s^alpha; padded-dimension (linear in size) factor is the theorem's, NOT measured",
+  "qos_per_A2_query_samples": {
+    "per_query_samples_eps1e-2_N128": 1.252900308220627e+25,
+    "per_query_samples_eps1e-2_N64": 6.188839384976747e+24,
+    "per_query_samples_eps1e-2_proof_s5": 2.0403873651173208e+29,
+    "per_query_samples_eps1e-3_N128": 1.274064142217962e+26,
+    "per_query_samples_eps1e-3_N64": 6.293380479364245e+25,
+    "per_query_samples_eps1e-3_proof_s5": 2.0748533311660724e+30
+  },
+  "script_sha256": "e2941d61400453a62ac205f0e41723987af7aaf36581791e91fec71db619d1fe",
+  "sources": {
+    "dense": "arXiv:2610.02321 Eq. 6: L/lam + (4b+2)lam - 6",
+    "dense_sequential": "arXiv:2610.02321 Eq. 8: (1/2)(1+1/b)L/lam + 3b(b+1)lam - 3(b+1)",
+    "selectcopy": "arXiv:2605.20334 Sec. II.B: 2L/lam + 2b(lam-1) + 2lam - 6",
+    "selectswap_dirty": "Berry et al. 2019 (as quoted in arXiv:2605.20334): 2L/lam + 4b(lam-1)",
+    "sequential_packets": "arXiv:2605.20334 Eq. 7 (alpha=b): (1+1/b)L/lam + 2(b+1)(b lam - 2)",
+    "unary": "Babbush et al. 2018 (as quoted in arXiv:2605.20334): ~L"
+  },
+  "storage": {
+    "csr_bytes": 9435344,
+    "csr_plus_csc_bytes": 12762516,
+    "padded_tables_bytes": 869165516.0
+  }
+}

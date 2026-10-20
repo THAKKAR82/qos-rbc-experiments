@@ -30,9 +30,9 @@ The project's conclusion is that QOS is not useful for the bank-held data studie
    - Featurizer state is 8.2 MB for frozen TF-IDF, against 48 KB for causal features.
    - Source: [streaming pilot](../../results/classical_streaming/20261019T202457Z-4a8cdd1c/report.md).
 4. **The QROM comparison.**
-   - A conventional QROM / SelectSwap loader needs roughly 10⁴–10⁶ Toffoli gates per query for the 1.56 M-nonzero CFPB matrix, while storing a 6–10 MB table.
-   - QOS needs roughly 10²⁴ or more samples per query by extrapolation.
-   - Source: `docs/qrom_vs_qos_estimate.md`, to be written. This is a back-of-envelope resource estimate.
+   - A QROM loader needs about 10⁵–10⁶ Toffoli gates per A/s block-encoding query for the 1.56 M-nonzero CFPB matrix in practical dirty-qubit regimes (dense encoding with sequential packets: 1.3×10⁵ with 1,024 dirty qubits, packed tables), while storing a 9–13 MB table.
+   - QOS needs about 6×10²⁴–1×10²⁵ samples per A/2 query by extrapolation ([empirical F61](../empirical_f61.md)).
+   - Source: [docs/qrom_vs_qos_estimate.md](../qrom_vs_qos_estimate.md), with numbers from [`results/audit/qrom_vs_qos/`](../../results/audit/qrom_vs_qos/). This is a back-of-envelope resource estimate.
 
 None of this is a disproof of Theorem F.13 or a statement about other datasets. The conclusion is about applicability to these representations.
 
