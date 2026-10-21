@@ -155,7 +155,7 @@
   "verification": {
     "added_artifacts": {
       "kstar.csv": "847fb577ec9b0758202ba65f9cc20adc5ce1c7d8ec8c8085ed0d2ce613500e18",
-      "report.md": "5b9f1a561545dd6d74f606be523daa156eb84e282c396a02449a911607f0a30f",
+      "report.md": "d1058b883055a7ce9cdf9e0750f8f3293d52315ce7c29a880582bf51d444df69",
       "retention.csv": "64ab9c1950b39e98df13e6ec4b8a656a5cf6051ed6b3bca5694aa2030c516602",
       "samples_to_target.csv": "94c9488ceea9435861463c51d8113d6aaf5951929cef591ab655d478597abcff",
       "state.csv": "1bbeb91a0bea986914020703e5617e827215d9ff182da1f1fbe9146540774204"
@@ -166,7 +166,17 @@
       "kstar.csv (36 rows) and retention.csv (108 rows) recomputed independently: 0 mismatches"
     ],
     "date_utc": "2026-10-21T15:15:50.745014+00:00",
-    "previous_status": "cells_completed"
+    "previous_status": "cells_completed",
+    "revisions": [
+      {
+        "change": "documented the per-budget seed-draw bootstrap decision; linked the convergence control; added test-split confirmation pointer",
+        "date_utc": "2026-10-21T18:59:08.100338+00:00",
+        "file": "report.md",
+        "note": "scoped_test_20261021T152347Z-67e0c44e recorded this manifest's pre-revision hash at its start",
+        "previous_sha256": "5b9f1a561545dd6d74f606be523daa156eb84e282c396a02449a911607f0a30f",
+        "sha256": "d1058b883055a7ce9cdf9e0750f8f3293d52315ce7c29a880582bf51d444df69"
+      }
+    ]
   },
   "wall_seconds": 24841.076138624994
 }

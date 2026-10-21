@@ -36,7 +36,7 @@ On that basis the manifest status was changed from `cells_completed` to `complet
 - **Examples are resampled once and shared.** One resample of validation examples (an index vector) is applied to the Ridge reference and to every budget, so the comparison between budgets is paired. All groups within a task use the same validation set and the same RNG draw sequence, so they get the same example resamples.
 - **Seeds are resampled as whole blocks.** For each budget, the three evaluation seeds are drawn with replacement. Each drawn seed keeps its whole prediction vector, so per-seed predictions are never broken apart.
 
-The seed draws are made **independently for each budget**: the same seed number is not tied together across budgets. That is deliberate, because a seed sets different hash or projection dimensions at different budgets, so seed 42 is not the same model at 4 KiB and at 64 KiB. Percentile 95% intervals use the lower/higher conventions. A replicate in which no budget reaches the threshold is counted as k\* = ∞. A blank CI upper bound means more than 2.5% of replicates never reached the threshold within 512 KiB.
+The seed draws are made **independently for each budget**: the same seed number is not tied together across budgets. That is deliberate, because a seed sets different hash or projection dimensions at different budgets, so seed 42 is not the same model at 4 KiB and at 64 KiB. **Method decision (2026-10-21):** keep per-budget seed draws. Seed identity is not shared across budgets, while validation examples stay paired across the reference and all budgets. The test-split confirmation uses the same bootstrap. Percentile 95% intervals use the lower/higher conventions. A replicate in which no budget reaches the threshold is counted as k\* = ∞. A blank CI upper bound means more than 2.5% of replicates never reached the threshold within 512 KiB.
 
 **MISSION is excluded**, for the reason recorded in the manifest:
 - it was the weakest method in every 128 KiB pilot cell;
@@ -179,7 +179,7 @@ Per-budget 95% CIs and the selected configurations are in [retention.csv](retent
 - **Track B changes the representation.** Its gap from the TF-IDF Ridge target mixes representation, optimization and sketching effects.
 - **Earlier runs are kept for the record.**
   - The partial run `scoped_20261020T142519Z-60752b83` (15 cells, legacy allocator) stopped on the byte-ceiling check, and [ALLOCATION_FIX.md](../../../experiments/cfpb_streaming_state/ALLOCATION_FIX.md) explains the cause. Its cells are not used here.
-  - The full-dimensional SGD convergence control `convergence_20261020T142038Z-c609c8bb` (local and uncommitted) reached ≥ 99.3% joint retention by 5 passes in all 12 configurations. So the shortfalls at small budgets are not an optimizer failure.
+  - The full-dimensional SGD convergence control [convergence_20261020T142038Z-c609c8bb](../convergence_20261020T142038Z-c609c8bb/checkpoints.csv) reached ≥ 99.3% joint retention by 5 passes in all 12 configurations. So the shortfalls at small budgets are not an optimizer failure.
 
 ## Files
 
@@ -192,3 +192,9 @@ Per-budget 95% CIs and the selected configurations are in [retention.csv](retent
 | `cells/*.json` | Per-cell tuning rungs, allocations, evaluation curves and validation predictions |
 | [manifest.json](manifest.json) | Source and environment fingerprints, cell checksums, verification record |
 | [run_plan.json](run_plan.json), [preparation.json](preparation.json) | The approved plan and data preparation |
+
+## Test-split confirmation
+
+The frozen validation-selected configurations were later re-evaluated on the CFPB test split, without retuning: [scoped_test_20261021T152347Z-67e0c44e](../scoped_test_20261021T152347Z-67e0c44e/report.md), labelled "measured, test split, frozen selections". All 324 seeds reproduced this run's validation results exactly before being scored on test.
+- **95%:** k\*₉₅ on test is 4–32 KiB, and every group is at or above 95% by 32 KiB.
+- **98%:** reached by 128 KiB in 16 of 18 groups. mortgage_vs_rest B with sparse JL and with AWM do not reach it within 512 KiB.

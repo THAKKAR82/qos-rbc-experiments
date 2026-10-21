@@ -1,8 +1,8 @@
 # Final summary: Quantum Oracle Sketching on bank-held data
 
-Date: 2026-10-20. Paper: Zhao et al., arXiv:2604.07639v2 (Theorem F.13, Eqs. F48–F62); reference code `reference/quantum-oracle-sketching/` at `a3fe8d6`.
+Date: 2026-10-21 (completion). Paper: Zhao et al., arXiv:2604.07639v2 (Theorem F.13, Eqs. F48–F62); reference code `reference/quantum-oracle-sketching/` at `a3fe8d6`.
 
-**Conclusion.** QOS is not useful for the CFPB complaint text or the Bank Marketing table studied here. The theorem's sparsity condition fails by orders of magnitude on both. Even with the measured, smaller sparsity exponent, the extrapolated cost of each data query is 10²³–10²⁷ samples. Streaming classical learners reach 95% of full Ridge on validation with 16 KiB of learner state, usually within one pass, and 98% with 16–128 KiB. None of this disproves Theorem F.13 or says anything about other datasets. Phase (b), an end-to-end QOS simulation, was cancelled ([decision](../docs/decisions/phase_b_cancelled.md)), so the κ, γ and δ factors keep their proof values.
+**Conclusion.** QOS is not useful for the CFPB complaint text or the Bank Marketing table studied here. The theorem's sparsity condition fails by orders of magnitude on both. Even with the measured, smaller sparsity exponent, the extrapolated cost of each data query is 10²³–10²⁷ samples. Streaming classical learners reach 95% of full Ridge with 16 KiB of learner state on validation and 16–32 KiB on the held-out test split (frozen selections), usually within one pass; 98% takes 16–128 KiB, except on one imbalanced task with the causal featurizer. Even if QOS were free, its memory saving on this data would be at most the ~16 KiB of classical learner state needed for 95% retention; on the frozen-TF-IDF track the 8.2 MB featurizer, which any learner, quantum included, needs, dominates even that. None of this disproves Theorem F.13 or says anything about other datasets. Phase (b), an end-to-end QOS simulation, was cancelled ([decision](../docs/decisions/phase_b_cancelled.md)), so the κ, γ and δ factors keep their proof values.
 
 **Labels used in this summary.** Every table carries one of these:
 
@@ -88,9 +88,10 @@ The matrix has N = 13,459, D = 50,000, 1,563,584 nonzeros and s = 8,776. The QRO
 
 ## 5. Classical streaming: k* and learner vs featurizer state
 
-**Label: measured (validation only; the test split was not read).** Sources:
+**Labels:** validation columns are **measured, validation only**; test columns are **measured, test split, frozen selections** (no retuning; every rebuilt model reproduced its saved validation predictions exactly before test scoring). Sources:
 - [scoped run report](classical_streaming/scoped_20261020T154320Z-d1fc3382/report.md), with [kstar.csv](classical_streaming/scoped_20261020T154320Z-d1fc3382/kstar.csv), [retention.csv](classical_streaming/scoped_20261020T154320Z-d1fc3382/retention.csv), [state.csv](classical_streaming/scoped_20261020T154320Z-d1fc3382/state.csv) and [samples_to_target.csv](classical_streaming/scoped_20261020T154320Z-d1fc3382/samples_to_target.csv);
-- [pilot report](classical_streaming/20261019T202457Z-4a8cdd1c/report.md);
+- [test-split confirmation report](classical_streaming/scoped_test_20261021T152347Z-67e0c44e/report.md), with [kstar_test.csv](classical_streaming/scoped_test_20261021T152347Z-67e0c44e/kstar_test.csv), [retention_test.csv](classical_streaming/scoped_test_20261021T152347Z-67e0c44e/retention_test.csv) and [test_reference.json](classical_streaming/scoped_test_20261021T152347Z-67e0c44e/test_reference.json);
+- [convergence control](classical_streaming/convergence_20261020T142038Z-c609c8bb/checkpoints.csv), [pilot report](classical_streaming/20261019T202457Z-4a8cdd1c/report.md);
 - [protocol](../experiments/cfpb_streaming_state/PROTOCOL.md) and [allocation fix](../experiments/cfpb_streaming_state/ALLOCATION_FIX.md).
 
 This asks how much state a streaming classical learner needs to match frozen full Ridge (α = 1, unweighted, no intercept) on CFPB.
@@ -98,20 +99,33 @@ This asks how much state a streaming classical learner needs to match frozen ful
 **Setup:**
 - **Metric.** Joint retention = min(accuracy, balanced accuracy) relative to Ridge.
 - **Grid.** 3 tasks × 2 featurizer tracks × 3 methods × 6 learner budgets (4–512 KiB) = 108 cells, in chronological order.
-- **Tuning.** Each cell is tuned by successive halving on seed 2026, then evaluated on seeds 42/123/456 through 5 passes.
-- **k\*.** The smallest budget at which the 5-pass retention reaches the threshold. CIs come from a 2,000-replicate bootstrap that resamples validation examples (paired across budgets) and evaluation seeds.
-- **Verification.** All 108 cells were checked, and the k\* and retention tables were recomputed independently with 0 mismatches.
+- **Tuning.** Each cell is tuned by successive halving on seed 2026, on validation, then evaluated on seeds 42/123/456 through 5 passes.
+- **k\*.** The smallest budget at which the 5-pass retention reaches the threshold. CIs come from a 2,000-replicate bootstrap: examples are resampled once per replicate and shared across the reference and all budgets; seeds are drawn independently per budget.
+- **Test confirmation.** The same frozen configurations were rebuilt and scored on the February 15–28 test split (4,213 primary rows). The Ridge test reference matches the frozen step-1 audit to 1e-12.
+- **Verification.** All 108 cells were checked, and the validation k\* and retention tables were recomputed independently with 0 mismatches.
 
-**k\* by task, featurizer track and method.** Values are KiB of learner state, with the 95% CI in brackets.
+**k\* by task, featurizer track and method.** Values are KiB of learner state, with the 95% CI in brackets. A = frozen TF-IDF, B = causal. NR = not reached within 512 KiB.
 
-| Task | Track | Hashing + SGD k\*₉₅ / k\*₉₈ | Sparse JL + SGD k\*₉₅ / k\*₉₈ | AWM-Sketch k\*₉₅ / k\*₉₈ |
-|---|---|---|---|---|
-| credit_vs_checking | A (frozen TF-IDF) | 16 [16, 32] / 64 [32, 128] | 16 [16, 32] / 64 [32, 128] | 16 [16, 16] / 32 [16, 128] |
-| credit_vs_checking | B (causal) | 16 [16, 32] / 64 [32, 512] | 16 [16, 32] / 128 [32, 512] | 16 [16, 32] / 64 [32, 512] |
-| checking_vs_mortgage | A | 16 [16, 16] / 16 [16, 64] | 16 [16, 16] / 32 [16, 64] | 16 [4, 16] / 32 [16, 32] |
-| checking_vs_mortgage | B | 4 [4, 16] / 32 [16, 64] | 16 [4, 16] / 16 [16, 32] | 16 [4, 16] / 32 [16, 128] |
-| mortgage_vs_rest | A | 16 [16, 32] / 32 [32, 128] | 16 [16, 32] / 32 [32, 128] | 16 [16, 16] / 32 [16, 64] |
-| mortgage_vs_rest | B | 16 [16, 32] / 32 [16, >512] | 16 [16, 32] / 64 [32, 128] | 16 [16, 32] / 64 [32, >512] |
+| Task | Track | Method | k\*₉₅ validation | k\*₉₅ test | k\*₉₈ validation | k\*₉₈ test |
+|---|---|---|---|---|---|---|
+| credit_vs_checking | A | Hashing + SGD | 16 [16, 32] | 16 [16, 16] | 64 [32, 128] | 32 [32, 64] |
+| credit_vs_checking | A | Sparse JL + SGD | 16 [16, 32] | 16 [16, 16] | 64 [32, 128] | 32 [16, 64] |
+| credit_vs_checking | A | AWM-Sketch | 16 [16, 16] | 16 [16, 16] | 32 [16, 128] | 16 [16, 32] |
+| credit_vs_checking | B | Hashing + SGD | 16 [16, 32] | 16 [16, 16] | 64 [32, 512] | 32 [32, 64] |
+| credit_vs_checking | B | Sparse JL + SGD | 16 [16, 32] | 16 [16, 16] | 128 [32, 512] | 32 [16, 64] |
+| credit_vs_checking | B | AWM-Sketch | 16 [16, 32] | 16 [16, 16] | 64 [32, 512] | 32 [16, 64] |
+| checking_vs_mortgage | A | Hashing + SGD | 16 [16, 16] | 16 [16, 16] | 16 [16, 64] | 32 [16, 32] |
+| checking_vs_mortgage | A | Sparse JL + SGD | 16 [16, 16] | 16 [16, 16] | 32 [16, 64] | 16 [16, 64] |
+| checking_vs_mortgage | A | AWM-Sketch | 16 [4, 16] | 16 [16, 16] | 32 [16, 32] | 32 [16, 32] |
+| checking_vs_mortgage | B | Hashing + SGD | 4 [4, 16] | 16 [4, 16] | 32 [16, 64] | 32 [16, 64] |
+| checking_vs_mortgage | B | Sparse JL + SGD | 16 [4, 16] | 4 [4, 16] | 16 [16, 32] | 32 [16, 64] |
+| checking_vs_mortgage | B | AWM-Sketch | 16 [4, 16] | 16 [16, 16] | 32 [16, 128] | 32 [32, 32] |
+| mortgage_vs_rest | A | Hashing + SGD | 16 [16, 32] | 32 [16, 32] | 32 [32, 128] | 64 [32, 64] |
+| mortgage_vs_rest | A | Sparse JL + SGD | 16 [16, 32] | 16 [16, 32] | 32 [32, 128] | 64 [32, 64] |
+| mortgage_vs_rest | A | AWM-Sketch | 16 [16, 16] | 16 [16, 16] | 32 [16, 64] | 32 [16, 128] |
+| mortgage_vs_rest | B | Hashing + SGD | 16 [16, 32] | 32 [16, 32] | 32 [16, >512] | 128 [32, >512] |
+| mortgage_vs_rest | B | Sparse JL + SGD | 16 [16, 32] | 32 [16, 32] | 64 [32, 128] | NR [32, >512] |
+| mortgage_vs_rest | B | AWM-Sketch | 16 [16, 32] | 32 [16, 32] | 64 [32, >512] | NR [32, >512] |
 
 **Learner state vs featurizer state.**
 
@@ -123,17 +137,17 @@ This asks how much state a streaming classical learner needs to match frozen ful
 | Full Ridge coefficients, for comparison (pilot) | 400 KB payload | — |
 
 **Results:**
-- **95% needs 16 KiB.** It is reached at 16 KiB in 17 of 18 groups, and at 4 KiB in one.
-- **98% needs 16–128 KiB.** Two track-B mortgage groups have CI upper bounds above 512 KiB.
-- **Few passes are needed.** 91 of 108 cells reach 95% after a single pass, and 44 of 108 reach 98%.
-- **4 KiB is too small.** At 4 KiB, 17 of 18 cells stay below 95% even after 5 passes.
-- **The optimizer is not the limit.** A separate full-dimensional SGD control (12 configurations; local run `convergence_20261020T142038Z-c609c8bb`, not committed) reached ≥ 99.3% by 5 passes. So the small-budget shortfalls come from memory or representation, not optimization.
+- **95% needs 16–32 KiB.** On validation, 16 KiB in 17 of 18 groups (4 KiB in one). On test, 16 KiB in 13 groups, 4 KiB in one, and 32 KiB in four (mortgage_vs_rest A with hashing and all three mortgage_vs_rest B methods). Every group is at or above 95% on test by 32 KiB.
+- **98% needs 16–128 KiB, except one task on track B.** On test, 16 of 18 groups reach 98% by 128 KiB. mortgage_vs_rest B with sparse JL and with AWM never reach 98% on test within 512 KiB (plateau ≈ 97.9%).
+- **Few passes are needed.** After a single pass, 91 of 108 cells reach 95% on validation (84 on test), and 44 reach 98% (56 on test).
+- **4 KiB is too small.** At 4 KiB, 17 of 18 groups stay below 95% on both splits.
+- **The optimizer is not the limit.** A separate full-dimensional SGD control (12 configurations; [convergence_20261020T142038Z-c609c8bb](classical_streaming/convergence_20261020T142038Z-c609c8bb/checkpoints.csv)) reached ≥ 99.3% by 5 passes. So the small-budget shortfalls come from memory or representation, not optimization.
 - **On track A, the featurizer dominates.** The frozen TF-IDF featurizer is about 500× the learner's state, and it was fitted on all January rows, so it is not single-pass. That cost would equally apply to any learner fed this representation, a QOS sample stream included.
-- **Track B avoids it.** The causal featurizer reaches the same 95% target with about 64 KB in total.
+- **Track B avoids it.** The causal featurizer reaches 95% with about 64–80 KB in total (16–32 KiB learner + 47.9 KB featurizer).
 
 **Caveats:**
-- **Optimistic.** Selection, tuning and k\* all use the same validation set. Confirmation on test is a separate, unrun step.
-- **Limited scope.** Chronological order only, three tasks, and MISSION excluded (reason recorded in the run manifest).
+- **Test is one window.** Two weeks of February, three tasks, chronological order only, three evaluation seeds, and MISSION excluded (reason recorded in the run manifest).
+- **Grid-limited.** k\* is resolved only to the budget grid, and retention is not monotone in budget everywhere.
 - **Python allocation inventories.** These are not lower bounds on the state needed.
 - **No method ranking.** The data does not support one.
 
@@ -144,6 +158,6 @@ This asks how much state a streaming classical learner needs to match frozen ful
 - **Full solver composition.** It has only been calibrated at N = 4.
 - **The CFPB toy and the element-oracle exponent.** Neither was run or estimated.
 - **Beyond small sizes.** No exponents exist for N > 128, s > 32, or non-circulant sparsity.
-- **Beyond the scoped classical grid.** Classical results are validation-only on 3 CFPB tasks. There is no test-set evaluation, no random-order or MISSION cells, and no Bank or PaySim streaming runs.
+- **Beyond the scoped classical grid.** Classical results cover 3 CFPB tasks, with validation selection and one frozen test confirmation. There are no random-order or MISSION cells, and no Bank or PaySim streaming runs.
 
 Details are in [docs/decisions/phase_b_cancelled.md](../docs/decisions/phase_b_cancelled.md).
