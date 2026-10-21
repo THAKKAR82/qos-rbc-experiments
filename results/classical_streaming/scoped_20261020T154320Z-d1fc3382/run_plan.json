@@ -1,0 +1,831 @@
+{
+  "bootstrap": {
+    "n": 2000,
+    "resample": "validation examples (shared across reference, budgets, methods) and seeds",
+    "seed": 42
+  },
+  "candidates": [
+    {
+      "eta": 0.03,
+      "schedule": "inverse_time"
+    },
+    {
+      "eta": 0.1,
+      "schedule": "inverse_time"
+    },
+    {
+      "eta": 0.3,
+      "schedule": "inverse_time"
+    },
+    {
+      "eta": 1.0,
+      "schedule": "inverse_time"
+    },
+    {
+      "eta": 0.03,
+      "schedule": "inverse_sqrt"
+    },
+    {
+      "eta": 0.1,
+      "schedule": "inverse_sqrt"
+    },
+    {
+      "eta": 0.3,
+      "schedule": "inverse_sqrt"
+    },
+    {
+      "eta": 1.0,
+      "schedule": "inverse_sqrt"
+    }
+  ],
+  "cells": [
+    {
+      "budget_bytes": 4096,
+      "id": "credit_vs_checking_A_frozen_hash_sgd_b4096",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "credit_vs_checking_A_frozen_hash_sgd_b16384",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "credit_vs_checking_A_frozen_hash_sgd_b32768",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "credit_vs_checking_A_frozen_hash_sgd_b65536",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "credit_vs_checking_A_frozen_hash_sgd_b131072",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "credit_vs_checking_A_frozen_hash_sgd_b524288",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "credit_vs_checking_A_frozen_sparse_jl_sgd_b4096",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "credit_vs_checking_A_frozen_sparse_jl_sgd_b16384",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "credit_vs_checking_A_frozen_sparse_jl_sgd_b32768",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "credit_vs_checking_A_frozen_sparse_jl_sgd_b65536",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "credit_vs_checking_A_frozen_sparse_jl_sgd_b131072",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "credit_vs_checking_A_frozen_sparse_jl_sgd_b524288",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "credit_vs_checking_A_frozen_awm_b4096",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "credit_vs_checking_A_frozen_awm_b16384",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "credit_vs_checking_A_frozen_awm_b32768",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "credit_vs_checking_A_frozen_awm_b65536",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "credit_vs_checking_A_frozen_awm_b131072",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "credit_vs_checking_A_frozen_awm_b524288",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "credit_vs_checking_B_causal_hash_sgd_b4096",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "credit_vs_checking_B_causal_hash_sgd_b16384",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "credit_vs_checking_B_causal_hash_sgd_b32768",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "credit_vs_checking_B_causal_hash_sgd_b65536",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "credit_vs_checking_B_causal_hash_sgd_b131072",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "credit_vs_checking_B_causal_hash_sgd_b524288",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "credit_vs_checking_B_causal_sparse_jl_sgd_b4096",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "credit_vs_checking_B_causal_sparse_jl_sgd_b16384",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "credit_vs_checking_B_causal_sparse_jl_sgd_b32768",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "credit_vs_checking_B_causal_sparse_jl_sgd_b65536",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "credit_vs_checking_B_causal_sparse_jl_sgd_b131072",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "credit_vs_checking_B_causal_sparse_jl_sgd_b524288",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "credit_vs_checking_B_causal_awm_b4096",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "credit_vs_checking_B_causal_awm_b16384",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "credit_vs_checking_B_causal_awm_b32768",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "credit_vs_checking_B_causal_awm_b65536",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "credit_vs_checking_B_causal_awm_b131072",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "credit_vs_checking_B_causal_awm_b524288",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "credit_vs_checking"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "checking_vs_mortgage_A_frozen_hash_sgd_b4096",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "checking_vs_mortgage_A_frozen_hash_sgd_b16384",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "checking_vs_mortgage_A_frozen_hash_sgd_b32768",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "checking_vs_mortgage_A_frozen_hash_sgd_b65536",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "checking_vs_mortgage_A_frozen_hash_sgd_b131072",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "checking_vs_mortgage_A_frozen_hash_sgd_b524288",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "checking_vs_mortgage_A_frozen_sparse_jl_sgd_b4096",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "checking_vs_mortgage_A_frozen_sparse_jl_sgd_b16384",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "checking_vs_mortgage_A_frozen_sparse_jl_sgd_b32768",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "checking_vs_mortgage_A_frozen_sparse_jl_sgd_b65536",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "checking_vs_mortgage_A_frozen_sparse_jl_sgd_b131072",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "checking_vs_mortgage_A_frozen_sparse_jl_sgd_b524288",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "checking_vs_mortgage_A_frozen_awm_b4096",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "checking_vs_mortgage_A_frozen_awm_b16384",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "checking_vs_mortgage_A_frozen_awm_b32768",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "checking_vs_mortgage_A_frozen_awm_b65536",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "checking_vs_mortgage_A_frozen_awm_b131072",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "checking_vs_mortgage_A_frozen_awm_b524288",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "checking_vs_mortgage_B_causal_hash_sgd_b4096",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "checking_vs_mortgage_B_causal_hash_sgd_b16384",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "checking_vs_mortgage_B_causal_hash_sgd_b32768",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "checking_vs_mortgage_B_causal_hash_sgd_b65536",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "checking_vs_mortgage_B_causal_hash_sgd_b131072",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "checking_vs_mortgage_B_causal_hash_sgd_b524288",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "checking_vs_mortgage_B_causal_sparse_jl_sgd_b4096",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "checking_vs_mortgage_B_causal_sparse_jl_sgd_b16384",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "checking_vs_mortgage_B_causal_sparse_jl_sgd_b32768",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "checking_vs_mortgage_B_causal_sparse_jl_sgd_b65536",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "checking_vs_mortgage_B_causal_sparse_jl_sgd_b131072",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "checking_vs_mortgage_B_causal_sparse_jl_sgd_b524288",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "checking_vs_mortgage_B_causal_awm_b4096",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "checking_vs_mortgage_B_causal_awm_b16384",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "checking_vs_mortgage_B_causal_awm_b32768",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "checking_vs_mortgage_B_causal_awm_b65536",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "checking_vs_mortgage_B_causal_awm_b131072",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "checking_vs_mortgage_B_causal_awm_b524288",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "checking_vs_mortgage"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "mortgage_vs_rest_A_frozen_hash_sgd_b4096",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "mortgage_vs_rest_A_frozen_hash_sgd_b16384",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "mortgage_vs_rest_A_frozen_hash_sgd_b32768",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "mortgage_vs_rest_A_frozen_hash_sgd_b65536",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "mortgage_vs_rest_A_frozen_hash_sgd_b131072",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "mortgage_vs_rest_A_frozen_hash_sgd_b524288",
+      "method": "hash_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "mortgage_vs_rest_A_frozen_sparse_jl_sgd_b4096",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "mortgage_vs_rest_A_frozen_sparse_jl_sgd_b16384",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "mortgage_vs_rest_A_frozen_sparse_jl_sgd_b32768",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "mortgage_vs_rest_A_frozen_sparse_jl_sgd_b65536",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "mortgage_vs_rest_A_frozen_sparse_jl_sgd_b131072",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "mortgage_vs_rest_A_frozen_sparse_jl_sgd_b524288",
+      "method": "sparse_jl_sgd",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "mortgage_vs_rest_A_frozen_awm_b4096",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "mortgage_vs_rest_A_frozen_awm_b16384",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "mortgage_vs_rest_A_frozen_awm_b32768",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "mortgage_vs_rest_A_frozen_awm_b65536",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "mortgage_vs_rest_A_frozen_awm_b131072",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "mortgage_vs_rest_A_frozen_awm_b524288",
+      "method": "awm",
+      "representation": "A_frozen",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "mortgage_vs_rest_B_causal_hash_sgd_b4096",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "mortgage_vs_rest_B_causal_hash_sgd_b16384",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "mortgage_vs_rest_B_causal_hash_sgd_b32768",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "mortgage_vs_rest_B_causal_hash_sgd_b65536",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "mortgage_vs_rest_B_causal_hash_sgd_b131072",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "mortgage_vs_rest_B_causal_hash_sgd_b524288",
+      "method": "hash_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "mortgage_vs_rest_B_causal_sparse_jl_sgd_b4096",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "mortgage_vs_rest_B_causal_sparse_jl_sgd_b16384",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "mortgage_vs_rest_B_causal_sparse_jl_sgd_b32768",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "mortgage_vs_rest_B_causal_sparse_jl_sgd_b65536",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "mortgage_vs_rest_B_causal_sparse_jl_sgd_b131072",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "mortgage_vs_rest_B_causal_sparse_jl_sgd_b524288",
+      "method": "sparse_jl_sgd",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 4096,
+      "id": "mortgage_vs_rest_B_causal_awm_b4096",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 16384,
+      "id": "mortgage_vs_rest_B_causal_awm_b16384",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 32768,
+      "id": "mortgage_vs_rest_B_causal_awm_b32768",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 65536,
+      "id": "mortgage_vs_rest_B_causal_awm_b65536",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 131072,
+      "id": "mortgage_vs_rest_B_causal_awm_b131072",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "budget_bytes": 524288,
+      "id": "mortgage_vs_rest_B_causal_awm_b524288",
+      "method": "awm",
+      "representation": "B_causal",
+      "task": "mortgage_vs_rest"
+    }
+  ],
+  "evaluation_seeds": [
+    42,
+    123,
+    456
+  ],
+  "excluded_methods": {
+    "mission": "weakest method in every 128 KiB pilot cell; small-budget random/chronological order effects up to 14 accuracy points need a separate multi-seed study; native MISSION has no L2 term, so it does not optimize the Ridge objective"
+  },
+  "halving": [
+    [
+      8,
+      1
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      2,
+      5
+    ]
+  ],
+  "inverse_sqrt_tau": "N_train (one pass)",
+  "lambda_rule": "1/N_train (Ridge alpha=1), as in the pilot",
+  "ordering": "chronological",
+  "selection": "joint validation retention (min of accuracy and balanced-accuracy retention vs frozen full Ridge); ties to lower candidate index",
+  "thresholds": [
+    0.95,
+    0.98
+  ],
+  "tuning_seed": 2026,
+  "validation_only": true
+}
