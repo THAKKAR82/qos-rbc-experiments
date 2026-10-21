@@ -1,0 +1,13 @@
+id,status,reason,presentations,seconds,learner_state_bytes,featurizer_state_bytes
+conv_credit_vs_checking_chronological_eta0.1,completed,,36325,14.93507349999993,400754,8219927
+conv_credit_vs_checking_chronological_eta0.3,completed,,36325,14.654567874999998,400754,8219927
+conv_credit_vs_checking_chronological_eta1,completed,,36325,14.587031625000009,400754,8219927
+conv_credit_vs_checking_random_eta0.1,completed,,36325,14.848776250000014,400754,8219927
+conv_credit_vs_checking_random_eta0.3,completed,,36325,14.913965291999943,400754,8219927
+conv_credit_vs_checking_random_eta1,completed,,36325,14.849469290999991,400754,8219927
+conv_mortgage_vs_rest_chronological_eta0.1,completed,,67295,28.168639833000043,400754,8219927
+conv_mortgage_vs_rest_chronological_eta0.3,completed,,67295,28.246598457999994,400754,8219927
+conv_mortgage_vs_rest_chronological_eta1,completed,,67295,28.10267241600002,400754,8219927
+conv_mortgage_vs_rest_random_eta0.1,completed,,67295,28.632827041999917,400754,8219927
+conv_mortgage_vs_rest_random_eta0.3,completed,,67295,28.639992582999866,400754,8219927
+conv_mortgage_vs_rest_random_eta1,completed,,67295,28.68255850000014,400754,8219927

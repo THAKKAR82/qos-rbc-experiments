@@ -1,0 +1,139 @@
+{
+  "artifacts_sha256": {
+    "checkpoints.csv": "5817e5e5fd5625b43060fc5d1ba90df5d98423f790d9dce761b06a74e8f47be9",
+    "trajectories.csv": "9fe4fa8dadbc0ddc7279379035dc246a341dbac36ad5123ba4559911d76f0ebc"
+  },
+  "cap_seconds": 600.0,
+  "checkpoints_rule": "ceil(N/8), ceil(N/4), ceil(N/2), N, 2N, 5N",
+  "configurations": [
+    {
+      "eta0": 0.1,
+      "id": "conv_credit_vs_checking_chronological_eta0.1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "chronological",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "credit_vs_checking"
+    },
+    {
+      "eta0": 0.3,
+      "id": "conv_credit_vs_checking_chronological_eta0.3",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "chronological",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "credit_vs_checking"
+    },
+    {
+      "eta0": 1.0,
+      "id": "conv_credit_vs_checking_chronological_eta1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "chronological",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "credit_vs_checking"
+    },
+    {
+      "eta0": 0.1,
+      "id": "conv_credit_vs_checking_random_eta0.1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "random",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "credit_vs_checking"
+    },
+    {
+      "eta0": 0.3,
+      "id": "conv_credit_vs_checking_random_eta0.3",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "random",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "credit_vs_checking"
+    },
+    {
+      "eta0": 1.0,
+      "id": "conv_credit_vs_checking_random_eta1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "random",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "credit_vs_checking"
+    },
+    {
+      "eta0": 0.1,
+      "id": "conv_mortgage_vs_rest_chronological_eta0.1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "chronological",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "eta0": 0.3,
+      "id": "conv_mortgage_vs_rest_chronological_eta0.3",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "chronological",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "eta0": 1.0,
+      "id": "conv_mortgage_vs_rest_chronological_eta1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "chronological",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "eta0": 0.1,
+      "id": "conv_mortgage_vs_rest_random_eta0.1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "random",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "eta0": 0.3,
+      "id": "conv_mortgage_vs_rest_random_eta0.3",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "random",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "mortgage_vs_rest"
+    },
+    {
+      "eta0": 1.0,
+      "id": "conv_mortgage_vs_rest_random_eta1",
+      "max_passes": 5,
+      "method": "identity_sgd",
+      "order": "random",
+      "representation": "A_frozen",
+      "seed": 42,
+      "task": "mortgage_vs_rest"
+    }
+  ],
+  "date_utc": "2026-10-20T14:20:38.427424+00:00",
+  "interpretation": "measured validation score (classical full-dimensional SGD convergence control; not bounded-memory)",
+  "pilot_preparation_sha256": "bf01f3cf7cfe69a983ea8dc4df92377aaf20c016091c62d6d5c27cf63d70d729",
+  "pilot_run": "results/classical_streaming/20261019T202457Z-4a8cdd1c",
+  "replay": "repeated passes are replay; random order cycles the pilot's fixed seed-42 permutation",
+  "run_id": "20261020T142038Z-c609c8bb",
+  "schedule": "eta(t) = eta0 / (1 + eta0 * lambda * t), lambda = 1/N, half squared loss, no intercept",
+  "status": "completed",
+  "wall_seconds": 259.2704749999999
+}
