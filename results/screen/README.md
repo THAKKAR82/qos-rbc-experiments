@@ -33,16 +33,22 @@ These are synthetic and say nothing about real data. Even the best case, with s 
 
 ## Findings
 
-- **Hubs set s.** In both entity × window encodings, the typical column is nearly bounded: the col-nnz p99 slope is 0.10 [−0.20, 0.38] for PaySim and 0.19 [0.13, 0.28] for AML. The maximum column still grows roughly linearly with N. The theorem's s is that maximum, and it comes from a few hub entities (a merchant or account with thousands of transactions in one window). The same kind of heavy-column effect set s on CFPB.
-- **Cold start is the binding problem for bounded-type features.** Entity × window columns rarely recur in later rows.
-  - On AML, 61–78% of test rows have no training feature at N = 80k.
-  - On PaySim, the rate is about 0 when the test slice stays inside the training slice's 24-step window, and about 1 when it crosses into a new window. The per-replicate values at 80k are 0.00, 0.80, 0.97, 1.00 and 1.00. So the cold-start rate mostly reflects window alignment.
-  - Elliptic has no cross-step edges, so every later time step is cold start (measured 1.000 on the standard 34/15 split).
+Per-family attribution comes from [family_breakdown_20261026T143716Z/](family_breakdown_20261026T143716Z/) (`families.csv`, `spans.csv`). It is a derived diagnostic that rebuilds all 40 screened points, reproduces `scaling.csv` exactly, and changes no verdict.
+
+- **On AMLworld, s comes from hub accounts.** The largest (from account, day) column grows from 430 to 3,216 as N goes from 10k to 80k. That is a few source accounts with thousands of transactions in one day. The (to account, day) maximum stays at 77. The col-nnz p99 slope is 0.19 [0.13, 0.28], so the typical column is nearly bounded, but the theorem's s is the maximum.
+- **On PaySim, s does not come from entities.** It comes from the coarse (type × amount decile × 1-step) cell, whose maximum is 887, 1,756, 2,328 and 3,276 at N = 10k–80k. That count tracks hourly transaction volume. The entity families stay small: the (origin, window) maximum is ≤ 2 and the (destination, window) maximum is ≤ 78.
+- **Cold start is the binding problem.**
+  - On AMLworld, 61–78% of test rows share no training feature at N = 80k. That holds even though, in all five replicates, the test slice starts in the same day as the training slice ends: account × day features rarely recur even within a day.
+  - On PaySim, the cold-start rate is set by whether the test shares a *step* with training. In replicate 0 the test step (10) is the last training step, so the type × decile × step cell serves 100% of test rows and the rate is 0.00. Elsewhere that cell serves none and only destination windows serve any rows (0–20%), giving 0.80, 0.97, 1.00 and 1.00. Window-boundary crossing is not the driver: replicates 1 and 2 stay inside one 24-step window and still have 0.80 and 0.97.
+  - Elliptic has no cross-step edges. With a step-aligned split, every later time step is cold start (measured 1.000 on the standard 34/15 split).
 - **Margin ceiling (calculated).** With test entries |x| ≤ 1, Σᵢ γᵢ² ≤ ‖X′‖² ≤ s′_row·s′_col. Hence γ_p10 ≤ √(s′_row s′_col / m_served). For column-bounded test data, the served margin can only shrink like 1/√m, and γ⁻⁴ grows like m². The controls respect this (0.0011 ≤ 0.10 and 0.042 ≤ 0.12).
 
 ## Design limits and caveats
 
-- **PaySim windows and the grid.** At N ≤ 80k, a PaySim prefix spans fewer steps than one 24-step window. So the screen cannot show whether s saturates once the stream exceeds the window. The inconclusive slope partly reflects this. The protocol was not changed after the results were seen; a longer grid or a shorter window would be a new, pre-registered run.
+- **The grid barely reaches the time windows.**
+  - AMLworld: at N = 80k, training prefixes span 7–601 minutes, and the test starts in the same day as the training slice ends. So "account × day" behaves as "account within minutes to hours". The FAIL slope measures how hub accounts accumulate within hours. It says nothing about whether s levels off at a per-day maximum.
+  - PaySim: prefixes at 80k span 2–13 steps in four replicates and 92 steps in one. So the 24-step entity windows are mostly not exercised either.
+  - The protocol was not changed after the results were seen. A longer grid, or entity-only features, would be a new pre-registered run.
 - **Coverage.** There is one encoding per real dataset, chronological prefixes only, and 5 start offsets. The CIs reflect variation between start offsets only.
 - **Provenance.**
   - AMLworld comes from a Hugging Face mirror whose bytes are identical in three independent uploads. It has not been compared with the Kaggle original.

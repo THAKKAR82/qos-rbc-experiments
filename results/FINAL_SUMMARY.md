@@ -177,8 +177,9 @@ Details are in [docs/decisions/phase_b_cancelled.md](../docs/decisions/phase_b_c
 | IBM AMLworld HI-Small, account × day | 1.09 [0.98, 1.30] | 0.68 | FAIL (both) |
 | Elliptic, graph only | not measured | 1.00 (0 of 234,355 edges cross time steps) | FAIL (cold start) |
 
-- **The typical column is nearly bounded; the maximum is not.** The col-nnz p99 slopes are 0.1–0.2, but hub entities make the maximum grow with N.
-- **Bounded-type features run into cold start.** Later rows rarely share entity × window features with training, which gives γ = 0 for those rows.
+- **What sets s differs by dataset.** On AMLworld it is hub source accounts: the largest (account, day) column grows from 430 to 3,216 as N goes from 10k to 80k, while the typical column (p99) is nearly bounded. On PaySim it is a coarse (type × amount decile × hour) cell that tracks hourly volume. PaySim's entity families stay small (≤ 78).
+- **Cold start is the binding problem.** AMLworld account × day features rarely recur even within the same day (61–78% of test rows unserved). PaySim's rate depends on whether the test shares an hour with training. Source: `results/screen/family_breakdown_20261026T143716Z/`.
+- **The grid barely reaches the time windows.** Prefixes at N ≤ 80k span minutes to hours, so whether s levels off at a per-window maximum is untested.
 - **k\* and the real-data audit were not run.** No case passed both gates.
 
 **Synthetic reference points (not evidence about real data).**
