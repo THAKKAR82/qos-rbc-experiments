@@ -31,3 +31,12 @@ def test_breakdown_rows_reject_drift_from_committed_scaling():
     scaling.loc[0, "s_row_or_col"] += 1
     with pytest.raises(ValueError, match="does not reproduce"):
         fb.breakdown_rows("toy", build, ["all"], scaling)
+
+
+def test_breakdown_tolerates_csv_float_round_trip_but_not_real_drift():
+    scaling = scaling_for((200,), 1)
+    scaling.loc[0, "cold_start_rate"] += 1e-14        # What a CSV round trip can do to a float.
+    fb.breakdown_rows("toy", build, ["all"], scaling)
+    scaling.loc[0, "cold_start_rate"] += 1e-6
+    with pytest.raises(ValueError, match="does not reproduce"):
+        fb.breakdown_rows("toy", build, ["all"], scaling)

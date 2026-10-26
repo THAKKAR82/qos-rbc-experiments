@@ -33,7 +33,7 @@ def breakdown_rows(case, build, names, scaling, window=None):
         enc = build(int(point.N_requested), int(point.replicate))
         p = ss.sparsity_point(enc.X_train)
         cold = ss.cold_start_rate(enc.X_train, enc.X_test)
-        if p["s_row_or_col"] != point.s_row_or_col or cold != point.cold_start_rate:
+        if p["s_row_or_col"] != point.s_row_or_col or abs(cold - point.cold_start_rate) > 1e-12:  # CSV float round trip.
             raise ValueError(f"{case} N={point.N_requested} r={point.replicate} does not reproduce scaling.csv")
         key = dict(case=case, N_requested=int(point.N_requested), replicate=int(point.replicate))
         fams += [dict(key, **f) for f in sd.family_breakdown(enc, names)]
