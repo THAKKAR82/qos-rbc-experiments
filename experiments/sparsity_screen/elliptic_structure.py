@@ -22,7 +22,7 @@ import pandas as pd
 from src import qos_audit as qa
 from src.cfpb_prepare import ROOT, git_commit, write_json
 
-from .controls import LEDGER, PROTOCOL, publish
+from .controls import LEDGER, PROTOCOL, ledger_prefix, publish
 
 RAW = ROOT / "data/raw/screen/elliptic/zip"
 SOURCE = "https://data.pyg.org/datasets/elliptic/<file>.zip (PyTorch Geometric EllipticBitcoinDataset host)"
@@ -58,7 +58,7 @@ def load(raw=RAW):
     return edges, step, classes
 
 
-def run(output_dir, raw=RAW):
+def run(output_dir, raw=RAW, ledger=LEDGER):
     out = Path(output_dir)
     if out.exists() and any(out.iterdir()):
         raise FileExistsError(f"{out} is not empty; screen outputs are immutable")
@@ -82,7 +82,7 @@ def run(output_dir, raw=RAW):
         cross_step_edges=cross, within_step_edges=int(len(edges)) - cross,
         cold_start_step_aligned=dict(last_train_step=STANDARD_LAST_TRAIN_STEP, rate=cold,
                                      encoding="rows = labeled txs; columns = out:/in: neighbour ids"),
-        cold_start_gate=COLD_START_GATE, verdict=verdict,
+        cold_start_gate=COLD_START_GATE, verdict=verdict, ledger=ledger_prefix(ledger),
         reason=("no cross-step edges: every test row is cold-start (gamma = 0) under a step-aligned "
                 "chronological split" if cross == 0 else f"{cross} cross-step edges; build a case before deciding"),
         interpretation=INTERPRETATION)
@@ -112,7 +112,7 @@ def main():
         print(out, json.dumps({k: s[k] for k in ("n_nodes", "n_edges", "cross_step_edges", "cold_start_step_aligned",
                                                   "verdict", "labeled")}))
     else:
-        print("appended", publish(args.output, LEDGER))
+        print("appended", publish(args.output, LEDGER, record="structure.json"))
 
 
 if __name__ == "__main__":

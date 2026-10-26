@@ -28,7 +28,7 @@ from src import screen_datasets as sd
 from src import sparsity_screen as ss
 from src.cfpb_prepare import ROOT, git_commit, write_json
 
-from .controls import EMPIRICAL_ALPHA_S, LEDGER, PROTOCOL, _selected, publish
+from .controls import EMPIRICAL_ALPHA_S, LEDGER, PROTOCOL, _selected, ledger_prefix, publish
 
 GRID = (10_000, 20_000, 40_000, 80_000)
 COLD_START_GATE = 0.10  # Approved 2026-10-26 (PROTOCOL.md amendment A1).
@@ -177,7 +177,7 @@ def _markdown(frame: pd.DataFrame) -> str:
 
 
 def run_screen(output_dir, *, builders=None, descriptions=DESCRIPTIONS, grid=GRID, replicates=sd.REPLICATES,
-               n_boot=ss.N_BOOT, controls_dir=None, elliptic_dir=None):
+               n_boot=ss.N_BOOT, controls_dir=None, elliptic_dir=None, ledger=LEDGER):
     """Screen every case into a NEW directory; never touches the ledger (see publish)."""
     out = Path(output_dir)
     out = out if out.is_absolute() else ROOT / out
@@ -198,7 +198,8 @@ def run_screen(output_dir, *, builders=None, descriptions=DESCRIPTIONS, grid=GRI
                                 cold_start_gate=COLD_START_GATE, alphas=list(qa.ALPHAS), seed=qa.SEED,
                                 thresholds=dict(pass_below=ss.PASS_BELOW, fail_above=ss.FAIL_ABOVE),
                                 empirical_alpha_s=list(EMPIRICAL_ALPHA_S)),
-                    interpretation=INTERPRETATION, python=sys.version, platform=platform.platform(),
+                    interpretation=INTERPRETATION, ledger=ledger_prefix(ledger),
+                    python=sys.version, platform=platform.platform(),
                     packages={n: importlib.metadata.version(n) for n in ["numpy", "scipy", "scikit-learn", "pandas"]},
                     status="running")
     write_json(out / "manifest.json", qa._clean(manifest))

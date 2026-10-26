@@ -10,14 +10,21 @@ from experiments.sparsity_screen import controls
 SMALL = dict(grid=(500, 1_000, 2_000), replicates=2, audit_n=1_000, n_boot=50)
 
 
+HEADER = ("experiment_id,dataset,date,git_commit,preprocessing,n_samples,n_features,max_sparsity,"
+          "sketch_method,sketch_dimension,seed,model,metric,result,notes\n")
+
+
 @pytest.fixture(scope="module")
 def run(tmp_path_factory):
-    out, run_id = controls.run_controls(tmp_path_factory.mktemp("c") / "controls", **SMALL)
-    return out, run_id
+    base = tmp_path_factory.mktemp("c")
+    ledger = base / "experiment_log.csv"
+    ledger.write_text(HEADER + "old-1,d,2026-01-01,,,1,1,1,none,,42,m,x,1,{}\n")
+    out, run_id = controls.run_controls(base / "controls", ledger=ledger, **SMALL)
+    return out, run_id, ledger
 
 
 def test_run_writes_all_artifacts(run):
-    out, run_id = run
+    out, run_id, _ = run
     for name in ("manifest.json", "scaling.csv", "slopes.csv", "controls_summary.csv", "ledger_rows.csv",
                  "audit/bounded.json", "audit/dense_col.json", "audit/bounded_margin.json"):
         assert (out / name).exists(), name
@@ -48,12 +55,8 @@ def test_outputs_are_immutable(run):
         controls.run_controls(run[0], **SMALL)
 
 
-def test_publish_appends_exactly_once(run, tmp_path):
-    out, _ = run
-    header = ("experiment_id,dataset,date,git_commit,preprocessing,n_samples,n_features,max_sparsity,"
-              "sketch_method,sketch_dimension,seed,model,metric,result,notes\n")
-    ledger = tmp_path / "experiment_log.csv"
-    ledger.write_text(header + "old-1,d,2026-01-01,,,1,1,1,none,,42,m,x,1,{}\n")
+def test_publish_appends_exactly_once(run):
+    out, _, ledger = run
     n_rows = len(pd.read_csv(out / "ledger_rows.csv"))
     assert controls.publish(out, ledger) == n_rows
     assert controls.publish(out, ledger) == 0
@@ -61,3 +64,19 @@ def test_publish_appends_exactly_once(run, tmp_path):
         rows = list(csv.DictReader(f))
     assert rows[0]["experiment_id"] == "old-1" and len(rows) == 1 + n_rows
     assert all("interpretation" in json.loads(r["notes"]) for r in rows[1:])
+
+
+def test_publish_rejects_history_changed_since_the_run(tmp_path):
+    ledger = tmp_path / "experiment_log.csv"
+    ledger.write_text(HEADER + "old-1,d,2026-01-01,,,1,1,1,none,,42,m,x,1,{}\n")
+    out, _ = controls.run_controls(tmp_path / "controls", ledger=ledger, **SMALL)
+    ledger.write_text(HEADER + "old-1,EDITED,2026-01-01,,,1,1,1,none,,42,m,x,1,{}\n")   # History edited after the run.
+    with pytest.raises(ValueError, match="Historical ledger prefix changed"):
+        controls.publish(out, ledger)
+
+
+def test_publish_requires_a_recorded_ledger_prefix(tmp_path):
+    (tmp_path / "manifest.json").write_text(json.dumps({"run_id": "x"}))
+    pd.DataFrame([{"experiment_id": "a"}]).to_csv(tmp_path / "ledger_rows.csv", index=False)
+    with pytest.raises(KeyError):
+        controls.publish(tmp_path, tmp_path / "experiment_log.csv")

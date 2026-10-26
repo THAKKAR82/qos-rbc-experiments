@@ -90,7 +90,13 @@ def _extra_ledger_rows(summary: dict, *, run_id, date, commit, output_dir) -> li
             row("log10_F61_empirical_hi", summary["log10_F61_emp_hi"], "empirical", alpha_s=min(EMPIRICAL_ALPHA_S))]
 
 
-def run_controls(output_dir, *, grid=GRID, replicates=5, audit_n=GRID[-1], n_boot=ss.N_BOOT):
+def ledger_prefix(ledger=LEDGER) -> dict:
+    """Length and SHA-256 of the ledger as it stands now; publish later refuses if this prefix changed."""
+    data = Path(ledger).read_bytes()
+    return dict(path=str(ledger), original_length=len(data), original_sha256=hashlib.sha256(data).hexdigest())
+
+
+def run_controls(output_dir, *, grid=GRID, replicates=5, audit_n=GRID[-1], n_boot=ss.N_BOOT, ledger=LEDGER):
     """Screen and audit the three controls into a NEW directory; never touches the ledger."""
     out = Path(output_dir)
     out = out if out.is_absolute() else ROOT / out
@@ -99,7 +105,6 @@ def run_controls(output_dir, *, grid=GRID, replicates=5, audit_n=GRID[-1], n_boo
     (out / "audit").mkdir(parents=True, exist_ok=True)
     now = datetime.now(timezone.utc)
     run_id = now.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
-    ledger_bytes = LEDGER.read_bytes()
     manifest = dict(run_id=run_id, date_utc=now.isoformat(), git_commit=git_commit(ROOT),
                     code_sha256={p: _sha(ROOT / p) for p in CODE}, protocol_sha256=_sha(PROTOCOL),
                     config=dict(grid=list(grid), replicates=replicates, audit_n=audit_n, audit_replicate=0,
@@ -108,8 +113,7 @@ def run_controls(output_dir, *, grid=GRID, replicates=5, audit_n=GRID[-1], n_boo
                                 thresholds=dict(pass_below=ss.PASS_BELOW, fail_above=ss.FAIL_ABOVE)),
                     cases={c: dict(kind=k, label=lab) for c, (k, lab) in CASES.items()},
                     interpretation=INTERPRETATION,
-                    ledger=dict(path=str(LEDGER.relative_to(ROOT)), original_length=len(ledger_bytes),
-                                original_sha256=hashlib.sha256(ledger_bytes).hexdigest()),
+                    ledger=ledger_prefix(ledger),
                     python=sys.version, platform=platform.platform(),
                     packages={n: importlib.metadata.version(n) for n in ["numpy", "scipy", "scikit-learn", "pandas"]},
                     status="running")
@@ -153,12 +157,16 @@ def run_controls(output_dir, *, grid=GRID, replicates=5, audit_n=GRID[-1], n_boo
     return out, run_id
 
 
-def publish(output_dir, ledger=LEDGER) -> int:
-    """Append this run's ledger rows exactly once (rows already present are skipped)."""
-    ledger = Path(ledger)
-    before = ledger.read_bytes()
+def publish(output_dir, ledger=LEDGER, record="manifest.json") -> int:
+    """Append this run's ledger rows exactly once, guarding the prefix recorded when the run started.
+
+    The ledger's length and SHA-256 at run time live in <record>["ledger"]; any
+    edit to those historical bytes since then makes append_exactly_once refuse.
+    """
+    prefix = json.loads((Path(output_dir) / record).read_text())["ledger"]
     rows = pd.read_csv(Path(output_dir) / "ledger_rows.csv", dtype=str, keep_default_na=False)
-    return append_exactly_once(ledger, rows.to_dict("records"), len(before), hashlib.sha256(before).hexdigest())
+    return append_exactly_once(Path(ledger), rows.to_dict("records"), prefix["original_length"],
+                               prefix["original_sha256"])
 
 
 def main():

@@ -87,14 +87,14 @@ def keyed_csr(rows: np.ndarray, keys: np.ndarray, n_rows: int,
 
 def _families(frames, family_keys: Callable[[pd.DataFrame], list[np.ndarray]]):
     """Namespace each feature family's key, fit the vocabulary on frames[0], encode all frames."""
-    out, vocabulary = [], None
+    out, vocabulary, F = [], None, 1
     for frame in frames:
         fams = family_keys(frame)
         F, n = len(fams), len(frame)
         keys = np.concatenate([k * F + f for f, k in enumerate(fams)]) if n else np.zeros(0, np.int64)
         X, vocabulary = keyed_csr(np.tile(np.arange(n), F), keys, n, vocabulary)
         out.append(X)
-    return out
+    return out, (vocabulary % F).tolist()  # Column -> feature family index.
 
 
 # ---------------------------------------------------------------- encodings
@@ -115,7 +115,8 @@ def encode_paysim_naive(train, val, test):
         Z[:, 5:] = (Z[:, 5:] - mean) / std
         return sparse.csr_matrix(Z)  # D = 10: dense columns are the point, densification is cheap.
     Xs = [encode(df) for df in (train, val, test)]
-    return *Xs, {"D": 10, "families": ["type one-hot", "log1p money (standardized on train)"]}
+    return *Xs, {"D": 10, "families": ["type one-hot", "log1p money (standardized on train)"],
+                 "column_family": [0] * 5 + [1] * 5}
 
 
 def encode_paysim_time_local(train, val, test):
@@ -130,9 +131,9 @@ def encode_paysim_time_local(train, val, test):
         cell = df["type"].map(type_code).to_numpy(np.int64) * 10 + decile
         return [df.orig.to_numpy() * n_windows + window, df.dest.to_numpy() * n_windows + window,
                 cell * n_steps + df.t.to_numpy()]
-    Xs = _families((train, val, test), keys)
+    Xs, column_family = _families((train, val, test), keys)
     return *Xs, {"families": ["orig x 24-step window", "dest x 24-step window", "type x amount decile x step"],
-                 "amount_decile_edges": edges.tolist()}
+                 "amount_decile_edges": edges.tolist(), "column_family": column_family}
 
 
 def encode_aml_acct_window(train, val, test):
@@ -141,8 +142,8 @@ def encode_aml_acct_window(train, val, test):
     def keys(df):
         day = df.t.to_numpy() // AML_WINDOW
         return [df.src.to_numpy() * n_days + day, df.dst.to_numpy() * n_days + day]
-    Xs = _families((train, val, test), keys)
-    return *Xs, {"families": ["from account x day", "to account x day"]}
+    Xs, column_family = _families((train, val, test), keys)
+    return *Xs, {"families": ["from account x day", "to account x day"], "column_family": column_family}
 
 
 # ---------------------------------------------------------------- cases
@@ -163,8 +164,28 @@ def make_case(frame: pd.DataFrame, encoder, n_max: int = N_MAX,
         Xtr, Xva, Xte, meta = encoder(*parts)
         return Encoded(Xtr, parts[0].y.to_numpy(), Xva, parts[1].y.to_numpy(), Xte, parts[2].y.to_numpy(),
                        meta=dict(meta, truncated=truncated, start=start,
-                                 t_range=[int(parts[0].t.iloc[0]), int(parts[2].t.iloc[-1])]))
+                                 t_range=[int(parts[0].t.iloc[0]), int(parts[2].t.iloc[-1])],
+                                 t_train=[int(parts[0].t.iloc[0]), int(parts[0].t.iloc[-1])],
+                                 t_test=[int(parts[2].t.iloc[0]), int(parts[2].t.iloc[-1])]))
     return build
+
+
+def family_breakdown(enc: Encoded, names: list[str]) -> list[dict]:
+    """Per feature family: largest training column count and share of test rows it alone serves.
+
+    Attributes s (a maximum over columns) and cold start to the family that
+    causes them; a test row is served by a family if it has a nonzero in one of
+    that family's training-support columns.
+    """
+    family = np.asarray(enc.meta["column_family"])
+    col_nnz = np.bincount(enc.X_train.indices[enc.X_train.data != 0], minlength=enc.X_train.shape[1])
+    out = []
+    for f, name in enumerate(names):
+        cols = (family == f) & (col_nnz > 0)
+        served = np.diff(enc.X_test[:, cols].indptr) > 0
+        out.append(dict(family=name, n_columns=int(cols.sum()),
+                        max_col_nnz=int(col_nnz[cols].max(initial=0)), test_rows_served=float(served.mean())))
+    return out
 
 
 ENCODERS = {"paysim_naive": ("paysim", encode_paysim_naive),

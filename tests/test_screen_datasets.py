@@ -113,3 +113,27 @@ def test_make_case_spaces_replicate_starts_and_records_truncation(tmp_path):
 
 def test_case_ids():
     assert sd.CASE_IDS == ("paysim_naive", "paysim_time_local", "aml_acct_window")
+
+
+# ---------------------------------------------------------------- per-family diagnostics (review fix)
+def test_entity_window_meta_labels_column_families_and_time_spans(tmp_path):
+    path = aml_csv(tmp_path, [("2022/09/01 00:00", "010", "A1", "010", "B1", 5.0, "ACH", 0),
+                              ("2022/09/01 10:00", "010", "A1", "010", "B2", 6.0, "ACH", 0),
+                              ("2022/09/01 23:00", "010", "A9", "010", "B1", 6.0, "ACH", 1),
+                              ("2022/09/02 01:00", "010", "A1", "010", "B1", 7.0, "ACH", 0)])
+    df = sd.load_amlworld(path)
+    Xtr, _, _, meta = sd.encode_aml_acct_window(df.iloc[:3], df.iloc[:0], df.iloc[3:])
+    fam = np.asarray(meta["column_family"])
+    assert fam.shape == (Xtr.shape[1],) and np.bincount(fam).tolist() == [2, 2]   # 2 from- and 2 to-columns.
+    enc = sd.make_case(df, sd.encode_aml_acct_window, n_max=2, replicates=1)(2, 0)
+    assert enc.meta["t_train"] == [0, 600] and enc.meta["t_test"][0] >= enc.meta["t_train"][1]
+
+
+def test_family_breakdown_max_column_and_served_share():
+    X_train = sparse.csr_matrix(np.array([[1., 1., 0.], [1., 0., 1.], [1., 0., 0.]]))
+    X_test = sparse.csr_matrix(np.array([[0., 1., 0.], [1., 0., 0.], [0., 0., 0.]]))
+    enc = ss.Encoded(X_train, np.array([1, -1, 1]), X_train, np.array([1, -1, 1]), X_test, np.array([1, -1, 1]),
+                     meta={"truncated": False, "column_family": [0, 1, 1]})
+    out = {r["family"]: r for r in sd.family_breakdown(enc, ["a", "b"])}
+    assert out["a"]["max_col_nnz"] == 3 and out["b"]["max_col_nnz"] == 1
+    assert out["a"]["test_rows_served"] == pytest.approx(1 / 3) and out["b"]["test_rows_served"] == pytest.approx(1 / 3)
