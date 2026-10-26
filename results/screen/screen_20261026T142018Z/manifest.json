@@ -1,0 +1,76 @@
+{
+  "artifacts_sha256": {
+    "ledger_rows.csv": "eb1d7666c5038cc139af2830d921c7e51486cc96d0b0c0f1a126c8c7a3a947df",
+    "scaling.csv": "e87d1531ab42f73e49492b9d7fe8edd317114515027047c820f776306c36045e",
+    "slopes.csv": "7dd682c2e3b1c0bb054d5de73e84b9ddc65b41ba78931533cb9fff135dd55969",
+    "summary.csv": "73885244c92090985c1bb93d75be77337eae1a7d76871befb1b13de71e39099f",
+    "summary.md": "d1af472f5f71d4c5e64831428e4e72754c610df5148d18ba3905a89f7c94e6db"
+  },
+  "code_sha256": {
+    "experiments/sparsity_screen/controls.py": "d09b8e867230ca3efac8978931bf189ae6a2694b89c769dae2687726878eb6bc",
+    "experiments/sparsity_screen/run.py": "6e858bce1f064cbad551e2831fd655ba92ce1a16e8f3be5c5f813bae79d0ce56",
+    "src/machine_size.py": "60785c741d3ae995bae25c1f4b14be7286f7ac305555878a8c9dc73a0d5838d1",
+    "src/qos_audit.py": "01bc5fc897c90a3babdf3bf09f52b03516dbe757610616e3fc28b43fc9baee48",
+    "src/screen_datasets.py": "0eafb8626baf8ebbf30427fd8ca0a107cf093b2eeccf8f3c6b5c382b3ac2198d",
+    "src/sparsity_screen.py": "655df9164c0af07417104ba9f417090f03ab8618f1399f567288f7bbb73b5808"
+  },
+  "config": {
+    "alphas": [
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "audit": "largest N, replicate 0; alpha by validation accuracy, ties -> larger",
+    "cases": [
+      "paysim_naive",
+      "paysim_time_local",
+      "aml_acct_window"
+    ],
+    "cold_start_gate": 0.1,
+    "empirical_alpha_s": [
+      3.147,
+      3.273
+    ],
+    "grid": [
+      10000,
+      20000,
+      40000,
+      80000
+    ],
+    "n_boot": 2000,
+    "replicates": 5,
+    "seed": 42,
+    "thresholds": {
+      "fail_above": 0.5,
+      "pass_below": 0.2
+    }
+  },
+  "data_sha256": {
+    "data/paysim.csv": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b",
+    "data/raw/screen/amlworld/HI-Small_Trans.csv": "b19d39f515523373f991b689c07e11e7b0b95c17a2c27a87d91584ae16c5b040"
+  },
+  "date_utc": "2026-10-26T14:20:43.839536+00:00",
+  "git_commit": "ece1da5a9ead5dbc586e0183df61b932592dc9e4",
+  "inputs": {
+    "controls": "/Users/Surface/code/qos-rbc-experiments/results/screen/controls_20261026T140837Z",
+    "elliptic": "/Users/Surface/code/qos-rbc-experiments/results/screen/elliptic_structure_20261026T141107Z"
+  },
+  "interpretation": {
+    "audit": "calculated / theoretical accounting with measured inputs",
+    "bound": "calculated inequality (Schur bound on the test matrix)",
+    "empirical": "extrapolation from small-size simulation; orders of magnitude only",
+    "sparsity": "measured (chronological prefixes of public data)"
+  },
+  "packages": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1"
+  },
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "protocol_sha256": "86f4345ff551af3d4311cd12b3d492e3350d3e955448416559838a4da90eddc0",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "run_id": "20261026T142043Z-5d40d734",
+  "status": "completed"
+}
