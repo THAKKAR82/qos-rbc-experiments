@@ -55,3 +55,13 @@ that benchmark; do not install/upgrade the project stack merely to fetch it.
 No PBMC file was found locally and no exact size, hash, filtered N/D or sparsity is
 claimed. Verify dataset-specific redistribution terms before any publication; the
 reference repository's code license does not settle data licensing.
+
+## Elliptic Bitcoin (sparsity screen, 2026-10-26)
+
+Token-free source: the PyTorch Geometric `EllipticBitcoinDataset` host,
+`https://data.pyg.org/datasets/elliptic/<file>.zip`, for `elliptic_txs_edgelist.csv`,
+`elliptic_txs_classes.csv` and `elliptic_txs_features.csv`. Keep the zips in
+`data/raw/screen/elliptic/zip/` and compare their hashes with `manifest.csv`. The original
+release is Kaggle `ellipticco/elliptic-data-set` (Weber et al., 2019). Its licence text was not
+verifiable (the page needs JavaScript), so no licence is inferred and no bytes are redistributed.
+The screen reads only the edge list, the classes and the first two feature columns (txId, time step).
