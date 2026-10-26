@@ -1,0 +1,13 @@
+case,statistic,slope,ci_boot_lo,ci_boot_hi,ci_t_lo,ci_t_hi,n_points,n_replicates,verdict
+ctrl_bounded,s_row_or_col,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_bounded,s_row,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_bounded,s_col,0.01791642123916466,0.0019907134710182898,0.03384212900731103,-0.0021413470737841264,0.037974189552113444,20,5,PASS
+ctrl_bounded,col_nnz_p99,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_dense_col,s_row_or_col,1.0,1.0,1.0,1.0,1.0,20,5,FAIL
+ctrl_dense_col,s_row,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_dense_col,s_col,1.0,1.0,1.0,1.0,1.0,20,5,FAIL
+ctrl_dense_col,col_nnz_p99,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_bounded_margin,s_row_or_col,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_bounded_margin,s_row,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_bounded_margin,s_col,0.0,0.0,0.0,0.0,0.0,20,5,PASS
+ctrl_bounded_margin,col_nnz_p99,0.0,0.0,0.0,0.0,0.0,20,5,PASS
