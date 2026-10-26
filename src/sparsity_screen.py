@@ -165,7 +165,58 @@ def dense_column_control(n_total: int, s: int = 16, d_ratio: int = 2,
     return sparse.hstack([X, np.ones((n_total, 1))], format="csr"), y
 
 
-CONTROLS = {"bounded": bounded_control, "dense_col": dense_column_control}
+def margin_control(n_total: int, s: int = 16, d_ratio: int = 1, threshold_nnz: int | None = None,
+                   seed: int | Sequence[int] = SEED) -> tuple[sparse.csr_matrix, np.ndarray]:
+    """Synthetic best case: bounded support (<= s per row and column) AND a planted margin.
+
+    Rows get a random class; each class owns a disjoint column block and every
+    row draws s columns from its own block through s injective maps, so labels
+    are y = sgn(x . w*) for w* = +1 / -1 on the two blocks. A row's planted margin
+    is nnz / sqrt(D); rows below the fixed threshold threshold_nnz / sqrt(D)
+    (default s - 1, i.e. at most one map collision) are dropped. This is a
+    reference point for kappa, gamma and F61, not evidence about real data.
+    """
+    threshold_nnz = s - 1 if threshold_nnz is None else threshold_nnz
+    rng = np.random.default_rng([int(v) for v in np.atleast_1d(seed)])
+    n_gen = n_total + math.ceil(.1 * n_total) + 200
+    y = np.where(rng.random(n_gen) < .5, 1, -1)
+    rows, cols, offset = [], [], 0
+    for label in (1, -1):
+        members = np.flatnonzero(y == label)
+        d = d_ratio * members.size
+        for _ in range(s):
+            rows.append(members)
+            cols.append(offset + rng.permutation(d)[:members.size])
+        offset += d
+    X = sparse.csr_matrix((np.ones(n_gen * s), (np.concatenate(rows), np.concatenate(cols))),
+                          shape=(n_gen, offset))
+    X.sum_duplicates()
+    X.data[:] = 1.0
+    keep = np.flatnonzero(np.diff(X.indptr) >= threshold_nnz)
+    if keep.size < n_total:
+        raise ValueError(f"only {keep.size} of {n_total} rows meet the margin threshold")
+    keep = keep[:n_total]
+    return X[keep], y[keep]
+
+
+def gamma_upper_bound(X_train, X_test, n_served: int) -> float:
+    """Calculated ceiling on the margin that n_served test rows can all reach.
+
+    With test entries |x| <= 1 on the training support S (true after the audit's
+    inf-rescaling), sum_i gamma_i^2 = ||X'_S w||^2 / ||w||^2 <= ||X'_S||^2
+    <= s'_row s'_col (Schur bound). So if n_served rows have gamma_i >= g, then
+    g <= sqrt(s'_row s'_col / n_served): with column-bounded test data, the
+    served margin shrinks like 1/sqrt(m). Sparsity patterns are unchanged by
+    row rescaling, so the bound applies to the audit's gamma as reported.
+    """
+    if n_served < 1:
+        return math.inf
+    _, support = nonzero_support(X_train)
+    p = sparsity_profile(sparse.csr_matrix(X_test)[:, support])
+    return math.sqrt(p["s_row_only"] * p["col_nnz"]["max"] / n_served)
+
+
+CONTROLS = {"bounded": bounded_control, "dense_col": dense_column_control, "bounded_margin": margin_control}
 
 
 def control_case(kind: str, s: int = 16, max_rows: int | None = None) -> Callable[[int, int], Encoded]:

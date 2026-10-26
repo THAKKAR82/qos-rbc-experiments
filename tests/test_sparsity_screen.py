@@ -128,3 +128,49 @@ def test_audit_tool_reports_bounded_control_as_sparse():
     row = out["alpha_sweep"][0]
     assert row["lsqr"]["converged"] and row["costs_gamma_p10"]["log10_F61_passes"] is not None
     assert out["test_sparsity"]["zero_rows_on_training_support"] == 0
+
+
+# ---------------------------------------------------------------- best-case margin control
+def _audit(kind, n=2_000):
+    from src import qos_audit as qa
+    enc = ss.control_case(kind)(n, 0)
+    return enc, qa.audit_binary(enc.X_train, enc.y_train, enc.X_val, enc.y_val, enc.X_test, enc.y_test,
+                                alphas=(1., 10.))
+
+
+def test_margin_control_is_bounded_and_linearly_separable_with_margin():
+    X, y = ss.margin_control(10_000)
+    p = ss.sparsity_point(X)
+    assert X.shape[0] == 10_000 and p["s_row_or_col"] <= 16
+    pos_cols = np.unique(X[y == 1].indices)
+    neg_cols = np.unique(X[y == -1].indices)
+    assert np.intersect1d(pos_cols, neg_cols).size == 0          # Class-pure column blocks.
+    w = np.zeros(X.shape[1]); w[pos_cols], w[neg_cols] = 1., -1.
+    margin = (X @ w) * y / np.linalg.norm(w)
+    assert margin.min() >= 15 / np.sqrt(X.shape[1])               # Fixed planted threshold (s - 1) / sqrt(D).
+    assert 0.4 < (y == 1).mean() < 0.6
+
+
+def test_margin_control_threshold_drops_rows_below_it():
+    X, y = ss.margin_control(5_000, s=16, threshold_nnz=16)        # Only collision-free rows survive.
+    assert X.shape[0] == 5_000 and (np.diff(X.indptr) == 16).all()
+
+
+def test_margin_control_is_a_best_case_for_the_audit():
+    _, bounded = _audit("bounded")
+    _, best = _audit("bounded_margin")
+    for row in best["alpha_sweep"]:
+        assert row["validation"]["accuracy"] >= .99
+    g_best = max(r["margins_inf_rescaled"]["q10"] for r in best["alpha_sweep"])
+    g_bounded = max(r["margins_inf_rescaled"]["q10"] for r in bounded["alpha_sweep"])
+    assert g_best > 10 * g_bounded
+
+
+@pytest.mark.parametrize("kind", ["bounded", "bounded_margin"])
+def test_gamma_p10_respects_test_sparsity_bound(kind):
+    enc, out = _audit(kind)
+    for row in out["alpha_sweep"]:
+        c = row["costs_gamma_p10"]["inputs"]
+        bound = ss.gamma_upper_bound(enc.X_train, enc.X_test, n_served=c["m"])
+        assert c["gamma_test"] <= bound + 1e-12
+    assert ss.gamma_upper_bound(sparse.csr_matrix(np.eye(3)), sparse.csr_matrix(np.ones((4, 3))), 4) == pytest.approx(np.sqrt(3 * 4 / 4))

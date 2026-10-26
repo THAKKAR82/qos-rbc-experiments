@@ -40,4 +40,10 @@ Removed from scope by the user: SEC XBRL, every other naive fixed-D encoding, an
 
 ## Amendments
 
-None.
+### A1 — 2026-10-26, before any real data was read (user approval)
+
+1. **Cold-start gate approved:** cold-start ≤ 0.10, as the mean over replicates at the largest N. The "proposed" marking above is superseded.
+2. **Encodings:** uncapped time-local encodings only; `paysim_naive` is fixed-D (D = 10); the N/D derivation goes into a dated addendum to `results/FINAL_SUMMARY.md` after the screen.
+3. **New control `ctrl_bounded_margin`, labelled "synthetic best case":** the same bounded support (s ≤ 16), with labels from a planted linear model with a margin. Each class owns a disjoint column block, and w\* = ±1 by block, so every row's planted margin is nnz/√D. Rows below the fixed threshold (s − 1)/√D are dropped. `audit_binary` reports κ_reg, γ_p10 and log10 F61 (proof, and empirical with α_s = 3.147 and 3.273) next to `ctrl_bounded`. It is a reference point, not evidence about real data.
+4. **Reported diagnostic, calculated:** γ_p10 ≤ √(s′_row s′_col / m_served), where s′ is the sparsity of the test matrix on the training support. Test entries are |x| ≤ 1 after inf-rescaling, so Σ_i γ_i² ≤ ‖X′‖² ≤ s′_row s′_col. With column-bounded test data, the served margin can only shrink like 1/√m. This is reported, not used as a gate.
+5. **Ledger IDs:** the screen's ledger rows use `<id>-<metric>` IDs, so `append_exactly_once` sees unique keys. Historical rows are untouched.

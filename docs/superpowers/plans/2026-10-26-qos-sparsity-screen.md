@@ -52,6 +52,7 @@ Let X ∈ ℝ^{N×D} have N nonzero rows with mean row nonzero count r̄ ≥ 1, 
 |---|---|---|---|---|
 | `ctrl_bounded` | synthetic | planted y = sgn(Xw\* + noise) | n_total × 2 n_total, the sum of 16 seeded injective row→column maps | positive control: must PASS |
 | `ctrl_dense_col` | synthetic | same | `ctrl_bounded` plus one all-ones column | negative control: must FAIL |
+| `ctrl_bounded_margin` | synthetic (added by amendment A1) | planted class-block linear model, planted margin nnz/√D | s ≤ 16; rows below (s − 1)/√D dropped | "synthetic best case" reference for κ, γ, F61; run by `experiments/sparsity_screen/controls.py` |
 | `elliptic_structure` | Elliptic Bitcoin edge list and time steps (token-free mirror if one exists, else Kaggle `ellipticco/elliptic-data-set`) | — | structural check only: count edges whose endpoints are in different time steps | 0 edges: FAIL by the γ = 0 gate (under a step-aligned chronological split, every test row's neighbours are outside the training columns, so cold start = 1, calculated from the edge list), and the rest is skipped. > 0 edges: stop and report before building an Elliptic case. |
 | `paysim_naive` | local `data/paysim.csv` (registered hash) | transactions, isFraud = +1 | fixed D = 10: type one-hot (5), log1p(amount), 4 balances, standardized on train | the one illustration of the N/D bound; expected FAIL |
 | `paysim_time_local` | same | same | (nameOrig, 24-step window), (nameDest, 24-step window), (type, train-fitted amount decile, 1-step window); value 1, uncapped | screened |
