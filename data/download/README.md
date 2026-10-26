@@ -65,3 +65,13 @@ Token-free source: the PyTorch Geometric `EllipticBitcoinDataset` host,
 release is Kaggle `ellipticco/elliptic-data-set` (Weber et al., 2019). Its licence text was not
 verifiable (the page needs JavaScript), so no licence is inferred and no bytes are redistributed.
 The screen reads only the edge list, the classes and the first two feature columns (txId, time step).
+
+## IBM AMLworld HI-Small (sparsity screen, 2026-10-26)
+
+The original release is Kaggle `ealtman2019/ibm-transactions-for-anti-money-laundering-aml`,
+under a Community Data License Agreement (Altman et al., NeurIPS 2023, Appendix A). For a
+token-free download, use `HI-Small_Trans.csv` from the Hugging Face mirror
+`OsamaMIT/IBM-AML-HI-Small` (`/resolve/main/HI-Small_Trans.csv`). The file is byte-identical,
+with the same LFS SHA-256, in three independent uploads (OsamaMIT, Sachin071002, bbfizp). It has
+not been compared with the Kaggle original. Put it in `data/raw/screen/amlworld/` and check the
+hash against `manifest.csv`.
