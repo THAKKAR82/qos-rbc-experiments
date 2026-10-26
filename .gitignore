@@ -1,31 +1,9 @@
-reference/quantum-oracle-sketching/
-
 .venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .DS_Store
-
 reference/quantum-oracle-sketching/
-
 validation/
-
 data/*
 !data/.gitkeep
-.venv-qos-ref/
-
-# Dataset provenance is tracked; legacy raw paths remain local by default.
-!data/README.md
-!data/manifest.csv
-!data/metadata/
-!data/metadata/**
-!data/download/
-!data/download/**
-/data/raw/
-/data/processed/
-**/data_cache/
-# Downloaded/generated dataset containers (never force-add without review).
-*.zip
-*.tar.gz
-*.h5ad
-*.parquet
