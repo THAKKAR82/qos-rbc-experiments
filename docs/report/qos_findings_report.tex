@@ -1,0 +1,723 @@
+\documentclass[10pt]{article}
+
+\usepackage[margin=0.7in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{tcolorbox}
+
+% ------------------------------------------------------------
+% List formatting
+% ------------------------------------------------------------
+\setlist[itemize]{
+    leftmargin=1.4em,
+    itemsep=1.5pt,
+    topsep=3pt,
+    parsep=0pt,
+    partopsep=0pt
+}
+\setlist[enumerate]{
+    leftmargin=1.6em,
+    itemsep=1.5pt,
+    topsep=3pt,
+    parsep=0pt,
+    partopsep=0pt
+}
+
+% ------------------------------------------------------------
+% Section formatting
+% ------------------------------------------------------------
+\titleformat{\section}
+  {\large\bfseries}
+  {}
+  {0pt}
+  {}
+
+\titlespacing*{\section}
+  {0pt}
+  {10pt}
+  {5pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+
+% Prevent excessive vertical stretching
+\raggedbottom
+
+% Table defaults
+\renewcommand{\arraystretch}{1.15}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+% ------------------------------------------------------------
+% Custom subsection-style heading
+% ------------------------------------------------------------
+\newcommand{\subhead}[1]{%
+    \par
+    \vspace{6pt}%
+    \textbf{#1}%
+    \par
+    \vspace{2pt}%
+}
+
+% Evidence label, e.g. \evlabel{measured}
+\newcommand{\evlabel}[1]{\textsf{\small[#1]}}
+
+% ------------------------------------------------------------
+% Unbreakable section environment
+%
+% Each section is placed in one minipage. If the complete
+% section does not fit in the remaining space on the page,
+% LaTeX moves the whole section to the next page.
+% ------------------------------------------------------------
+\newenvironment{sectionblock}
+{%
+    \par
+    \vspace{2pt}
+    \noindent
+    \begin{minipage}{\textwidth}
+}
+{%
+    \end{minipage}
+    \par
+    \vspace{5pt}
+}
+
+\begin{document}
+
+\begin{center}
+    {\Large \textbf{Quantum Oracle Sketching on Bank-Held Data}}\\[2mm]
+    {\small Limitations Found, Candidate Applications, and Next Steps}\\[1mm]
+    {\small Project Report -- October 2026}
+\end{center}
+
+\vspace{3mm}
+
+\textbf{Purpose:}
+Summarize about two weeks of focused testing (October 14--26, 2026) of Quantum Oracle Sketching (QOS) \cite{zhao2026} on public financial data: what limits it, which bank data and problems could still be worth testing, which other methods to consider, and what to do next. Each question a reader may ask has a section that answers it. Every number is reproducible from the project repository \cite{repo}.
+
+\vspace{2mm}
+
+\begin{tcolorbox}[colback=gray!6,colframe=gray!55,boxrule=0.5pt,arc=1pt,left=6pt,right=6pt,top=4pt,bottom=4pt]
+\textbf{Bottom line.}
+On the data tested so far (CFPB complaint text, UCI Bank Marketing, and PaySim analytically), QOS's proven advantage does \textbf{not} translate into a practical one. The paper's guarantee needs data that is sparse in both rows and columns; these datasets are not, and the resulting cost stays astronomical even after correcting for how loose the proof is. Classical streaming learners solve the same tasks with 16--32\,KiB of memory, which caps what QOS could save. A follow-up screen of three more public financial datasets, chosen \emph{because} they might fit, found none that does, and a simple counting argument explains why: keeping columns sparse needs features that rarely repeat, which leaves most new records with nothing to predict from. These are limitations found on public data and small simulations, not a disproof of the paper; internal data with genuinely recurring features over long windows remains untested (\hyperref[sec:next]{Next Steps}).
+\end{tcolorbox}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{How to Use This Document}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}Yl@{}}
+\toprule
+\textbf{If the question is\ldots} & \textbf{See} \\
+\midrule
+What is QOS, and what does the paper require? & \hyperref[sec:qos]{Background} \\
+What limitations were found, and how strong is the evidence? & \hyperref[sec:summary]{Key Limitations}, \hyperref[sec:f1]{Findings 1--6} \\
+Is there financial data that \emph{does} fit? & \hyperref[sec:f6]{Finding 6} \\
+What was \emph{not} tested? & \hyperref[sec:scope]{Scope} \\
+Which bank data and problems could still suit QOS? & \hyperref[sec:data]{Candidate Bank Data} \\
+What other methods should be considered? & \hyperref[sec:alt]{Alternative Methods} \\
+What should happen next? & \hyperref[sec:next]{Next Steps} \\
+Common objections (``it's a Caltech/Google paper'', ``a bigger machine'', \ldots) & \hyperref[sec:faq]{Anticipated Questions} \\
+How do I check or rerun the results? & \hyperref[sec:repro]{Reproducibility} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subhead{Evidence labels}
+
+Every result carries one label, so that measured facts are never confused with estimates:
+\evlabel{measured} real data or real classical training runs;
+\evlabel{simulated} classical simulation of QOS building blocks;
+\evlabel{calculated} the paper's formulas with measured inputs, orders of magnitude only;
+\evlabel{estimated} back-of-envelope estimates or extrapolations.
+Nothing here is a measurement of quantum hardware.
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Key Limitations Found}
+\label{sec:summary}
+
+\begin{enumerate}
+    \item \textbf{Real financial data is not sparse enough.}
+    The theorem needs every row \emph{and every column} of the data matrix to have few nonzeros. In complaint text, common words appear in 58--71\% of documents; in tabular data, numeric columns are filled in every row. Column sparsity grows with the dataset instead of staying small. \evlabel{measured}
+
+    \item \textbf{The paper's cost bound is astronomical on this data:}
+    $10^{37}$--$10^{45}$ passes over the training data, and still $10^{11}$--$10^{15}$ with perfectly sparse data. \evlabel{calculated}
+
+    \item \textbf{The bound is loose, but not loose enough.}
+    In simulation, the most expensive building block scales like $s^{3.1}$--$s^{3.3}$ in sparsity, not $s^{5}$. Correcting for this removes 6--8 orders of magnitude and leaves $10^{30}$--$10^{37}$. \evlabel{simulated, estimated}
+
+    \item \textbf{For stored data, the standard quantum route is far cheaper.}
+    QROM loading costs about $10^{10}$--$10^{11}$ gates per query. QOS needs about $10^{24}$--$10^{25}$ samples per query, i.e.\ re-streaming the dataset about $4\times 10^{18}$ times, so the data must be stored anyway. \evlabel{estimated}
+
+    \item \textbf{Classical streaming learners need only kilobytes.}
+    They reach 95\% of full-model accuracy with 16--32\,KiB on held-out test data, usually in one pass. The 8.2\,MB text featurizer, needed by any learner, outweighs the learner itself. \evlabel{measured}
+
+    \item \textbf{Data chosen to fit doesn't either.}
+    Three more public datasets (PaySim, IBM AMLworld, Elliptic) failed a pre-registered screen. Fixed-feature encodings fail by a counting argument; encodings that keep columns sparse leave 68--100\% of new records with no feature seen in training. \evlabel{measured, calculated}
+\end{enumerate}
+
+\textbf{Consequence.} On these datasets, even a cost-free QOS could save at most the 16--32\,KiB of classical learner state needed for 95\% retention.
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Background: QOS and What the Theorem Requires}
+\label{sec:qos}
+
+\subhead{The idea, in plain English}
+
+\begin{itemize}
+    \item Quantum machine-learning algorithms usually assume the data can be queried ``in superposition'' (an \emph{oracle}) \cite{aaronson2015}. Building that access normally means storing the dataset in quantum-accessible memory, which is expensive.
+    \item QOS streams random samples instead. Each sample nudges the quantum state by a small rotation and is thrown away; after enough samples, the rotations add up to the oracle. In the simplest case, $O_f|x\rangle=(-1)^{f(x)}|x\rangle$ is built from many phases of size $\pi f(x)/(\text{expected visits to }x)$.
+    \item The sketched oracles feed a quantum linear solver (QSVT \cite{gilyen2019qsvt,martyn2021}) that trains a ridge classifier, read out with classical shadows \cite{huang2020}.
+    \item \textbf{Claimed advantage: memory, not time.} A polylogarithmic-size quantum machine classifies where any classical machine needs nearly linear size \cite{zhao2026}. The ``about 50--60 logical qubits'' in the paper's real-data examples (Eq.\,A9) cover a \textbf{single prediction} and exclude the costs below.
+\end{itemize}
+
+\subhead{Conditions and cost (Theorem F.13 of \cite{zhao2026})}
+
+\begin{itemize}
+    \item \textbf{Sparsity $s$:} most nonzeros in any row \emph{or column}. \textbf{Conditioning $\kappa_{\mathrm{reg}}$:} how well-posed the regularized problem is. \textbf{Margin $\gamma$:} how far \emph{every} test point sits from the decision boundary. \textbf{Failure probability $\delta$.}
+    \item \textbf{Samples (Eq.\,F61):}
+    $\displaystyle M=\tilde O\!\left(\frac{R\,N\,s^{7}\kappa_{\mathrm{reg}}^{4}}{\gamma^{4}\,\delta}\min\{s^{2}\log^{2}D,\,\log^{2}m\}\right)$.
+    In words: cost grows with the 7th power of sparsity and 4th power of conditioning, and inversely with the 4th power of the margin.
+    \item The headline ``polylog qubits, $\tilde O(N)$ samples'' holds only when $s$, $\kappa_{\mathrm{reg}}$, $1/\gamma$, $1/\delta$ are all polylogarithmic (Eq.\,F62). A reusable model's qubit count (Eq.\,F60) has a term growing like $s/\gamma^{2}$.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Data and Methods}
+\label{sec:methods}
+
+\begin{itemize}
+    \item \textbf{CFPB Consumer Complaint Database} \cite{cfpb} (Jan--Feb 2026): classify complaint narratives into four products, chronological split. 13{,}459 training complaints, 50{,}000 TF-IDF features, 1{,}563{,}584 nonzeros; 10 binary tasks (the theorem is binary).
+    \item \textbf{UCI Bank Marketing} \cite{moro2014}: 45{,}211 rows, 51 encoded features, 5 CV folds (dense tabular contrast). \textbf{PaySim} \cite{paysim}: 6{,}362{,}620 transactions, analytic in Findings 1--3, measured in Finding 6.
+    \item \textbf{Screen datasets (Finding 6):} IBM AMLworld HI-Small synthetic AML transactions \cite{altman2023} and the Elliptic Bitcoin transaction graph \cite{weber2019}, from public mirrors; mirror licences not independently verified, so the data stays local.
+    \item The paper's conventions throughout (unweighted ridge, no intercept, $\|X\|=1$, labels $\pm1$). Quantum building blocks were simulated with the authors' reference code \cite{qosref}, corrected where it differed from the theorem. Version-controlled, append-only experiment ledger, regression tests, fixed seeds.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Finding 1: Real Financial Data Fails the Sparsity Condition}
+\label{sec:f1}
+
+\evlabel{measured inputs; calculated cost}
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lCCCCCC@{}}
+\toprule
+\textbf{Dataset} & \textbf{Column sparsity $s$} & \textbf{$s/N$} & \textbf{$\kappa_{\mathrm{reg}}$} & \textbf{Margin $\gamma$ (10th pct.)} & \textbf{$\log_{10}$ passes (F61)} & \textbf{$\log_{10}$ if $s=1$} \\
+\midrule
+CFPB pairs (6) & 2{,}916--5{,}992 & 0.58--0.71 & 5.4--16.5 & 0.008--0.11 & 36.7--40.7 & 11.1--14.7 \\
+CFPB one-vs-rest (4) & 8{,}776 & 0.65 & 18.7 & 0.007--0.13 & 40.9--42.9 & 13.3--15.3 \\
+Bank (5 folds) & 36{,}169 & 1.00 & 40.8 & 0.13--0.15 & 44.8--44.9 & 12.2--12.3 \\
+PaySim (analytic) & 6{,}362{,}620 & 1.00 & -- & -- & $s^7$ alone: 47.6 & -- \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+    \item \textbf{Why:} word frequencies follow a power law, so common words appear in most documents; tabular numeric columns are nonzero in every row. Dropping words in more than 1\% of documents still leaves $s\approx 520$--$770$ and discards 56--60\% of the data.
+    \item \textbf{Conditioning grows with data size} ($\kappa_{\mathrm{reg}}\propto\sqrt{N}$ at fixed regularization), and the closest test points sit at $\gamma\approx10^{-5}$.
+    \item The theorem's other preconditions hold (non-trivial fit, sparse test rows). One prediction needs about 52 qubits (A9), but the reusable-model term (F60) is $10^{12}$--$10^{18}$.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Finding 2: The Proof Is Loose, but Not Loose Enough}
+\label{sec:f2}
+
+\evlabel{simulated: expected-unitary model, ideal uniform sparsity, $N\le 128$, $s\le 32$}
+
+\vspace{2pt}
+Samples $M^{*}$ each building block needs to reach error $\varepsilon^{*}$, fitted as $M^{*}\propto s^{\alpha}$:
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lCCC@{}}
+\toprule
+\textbf{Building block} & \textbf{Proof exponent} & \textbf{Measured, $N=64$} & \textbf{Measured, $N=128$} \\
+\midrule
+Index oracle & 3 & 2.19--2.20 & 2.21--2.23 \\
+Block encoding (amplified, A/2), raw & 5 & 3.13--3.15 & 3.25--3.27 \\
+Block encoding, log factors removed & 5 & 2.67--2.76 & 2.79--2.87 \\
+Error dependence $\varepsilon^{-\beta}$ & $\beta=1$ & 1.01--1.02 & -- \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+    \item The proof overcharges by about two powers of $s$, from splitting its error budget across every oracle call. Exponents are stable across matrix size (largest change 0.07); read them to $\pm 0.2$. Small sizes only: this does not show the asymptotic bound is loose.
+    \item \textbf{Found along the way:} \texttt{pyqsp} 0.2.0 \cite{martyn2021} returns sign polynomials exceeding 1 at $s\ge16$, and the reference code then silently produces wrong circuit settings (errors up to about 2 on a $\pm1$ scale). The reference's fixed polynomial degree is also inaccurate from $s=8$. Both were replaced with a verified construction; a standalone reproduction is in the repository, not yet reported upstream. The paper's real-data plots do not use circuit simulation and are unaffected.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Finding 3: Corrected Cost Is Still Astronomical}
+\label{sec:f3}
+
+\evlabel{estimated: extrapolated from small-size simulation; orders of magnitude only}
+
+\vspace{2pt}
+Replacing the proof's $s^{5}$ factor with the measured $s^{3.15}$--$s^{3.27}$ (other factors at proof values):
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lCCCC@{}}
+\toprule
+\textbf{Dataset} & \textbf{$\log_{10}$ passes, proof} & \textbf{$\log_{10}$ passes, corrected} & \textbf{Change (decades)} & \textbf{Samples per query ($\varepsilon=10^{-2}$)} \\
+\midrule
+CFPB pairs & 36.7--40.7 & 30.3--34.3 & $-6.0$ to $-7.0$ & $1.9\times10^{23}$--$3.6\times10^{24}$ \\
+CFPB one-vs-rest & 40.9--42.9 & 33.6--36.1 & $-6.8$ to $-7.3$ & $6.2\times10^{24}$--$1.3\times10^{25}$ \\
+Bank & 44.8--44.9 & 36.4--37.1 & $-7.9$ to $-8.4$ & $5.3\times10^{26}$--$1.3\times10^{27}$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+    \item \textbf{Illustration:} at one billion samples per second, a single query to the CFPB data would take about 6 million to 400 million years.
+    \item \textbf{Caveats:} 2--3 decades of extrapolation in $s$; size dependence taken from the theorem; $\kappa$, $\gamma$, $\delta$ factors at proof values.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Finding 4: QOS vs QROM, the Standard Way to Load Stored Data}
+\label{sec:f4}
+
+\evlabel{estimated: back-of-envelope; units differ, compare orders of magnitude only}
+
+\vspace{2pt}
+CFPB one-vs-rest matrix ($s=8{,}776$). QROM uses dense encoding with sequential bit packets \cite{motlagh2026dense,motlagh2026halving}, building on SelectSwap \cite{berry2019,low2024}, with 1{,}024 borrowed qubits.
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lYY@{}}
+\toprule
+ & \textbf{QROM} & \textbf{QOS (corrected estimate)} \\
+\midrule
+Cost per query & $\approx 3.3\times10^{10}$ Toffoli gates & $\approx 6\times10^{24}$--$10^{25}$ samples \\
+Quantum memory & $\approx 1{,}080$ qubits (mostly borrowed) & $\approx 52$ logical qubits (A9) \\
+Data stored? & Yes: 9--13\,MB table & Re-streamed $\approx 4\times10^{18}$ times per query, plus an 8.2\,MB featurizer \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+    \item QOS's selling point is not storing the data, but on a finite dataset the data must be stored to be re-streamed. Banks retain data anyway, so QROM-style loading is the realistic route for stored data.
+    \item The amplification step is counted identically for both. Caveats: different units, per query only, QROM figures are lower bounds, fault-tolerance overheads excluded.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Finding 5: Classical Streaming Learners Need Only Kilobytes}
+\label{sec:f5}
+
+\evlabel{measured: validation selection, frozen configurations confirmed on held-out test data}
+
+\vspace{2pt}
+Smallest learner memory $k^{*}$ at which a single-pass learner (feature hashing \cite{weinberger2009}, sparse random projection \cite{kane2014}, AWM-Sketch \cite{tai2018}) reaches 95\% or 98\% of full ridge accuracy; two featurizers, budgets 4--512\,KiB, 3 seeds, bootstrap CIs.
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lCCC@{}}
+\toprule
+\textbf{Task} & \textbf{$k^{*}_{95}$ validation} & \textbf{$k^{*}_{95}$ test} & \textbf{$k^{*}_{98}$ test} \\
+\midrule
+Credit card vs checking (hardest pair) & 16\,KiB & 16\,KiB & 16--32\,KiB \\
+Checking vs mortgage (easy pair) & 4--16\,KiB & 4--16\,KiB & 16--32\,KiB \\
+Mortgage vs rest (imbalanced) & 16\,KiB & 16--32\,KiB & 32--128\,KiB; not reached in 2 of 6 groups \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+    \item 16\,KiB is about 2{,}000 stored numbers. Every task reaches 95\% on test by 32\,KiB, mostly in one pass. Mortgage-vs-rest with the causal featurizer plateaus at about 97.9\% for two methods.
+    \item The frozen TF-IDF featurizer (8.2\,MB) is about 500 times the learner, and any learner, quantum included, needs it; a causal featurizer cuts the total to about 64--80\,KB. A full-dimensional control reached $\ge$99.3\% of ridge, so shortfalls come from memory, not optimization.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Finding 6: Searching for Financial Data That Fits}
+\label{sec:f6}
+
+\evlabel{measured: public data and synthetic controls; calculated: bounds}
+
+\subhead{Why look, and how}
+Findings 1--5 tested data that was easy to obtain. This screen looked for public financial data that \emph{might} meet QOS's conditions. It is a regime search, not an attempt to force an advantage: cases, encodings and pass/fail thresholds were written down before any data was read, and every case is reported.
+
+\subhead{A counting argument explains most of the result}
+Every record has at least one feature, so the table holds at least $N$ nonzeros; spread over $D$ columns, the busiest column holds at least $s_{\mathrm{col}} \ge N/D$. In plain English: \textbf{if the number of features is fixed, the busiest column grows with the data}, so the sparsity condition fails by construction (as with CFPB and Bank Marketing). Columns stay small only if the number of features grows with the data, e.g.\ \emph{account $\times$ day}. But such features rarely reappear in new records: a test record with no feature seen in training has nothing to predict from (margin $\gamma=0$), and the theorem no longer applies. We call these \textbf{cold-start} records.
+
+\subhead{The screen}
+For each encoding, the busiest column $s$ was measured on growing chronological slices ($N$ = 10k, 20k, 40k, 80k; 5 replicates) and the slope of $\log s$ against $\log N$ fitted. Fixed in advance: \textbf{pass} if the 95\% interval's upper end is below 0.2, \textbf{fail} if its lower end is above 0.5, otherwise inconclusive; cold-start rate at most 10\%. Synthetic controls check that the screen can pass a favourable case.
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}llCCY@{}}
+\toprule
+\textbf{Data} & \textbf{Encoding} & \textbf{Slope of $s$ vs $N$ [95\% CI]} & \textbf{Cold start} & \textbf{Outcome} \\
+\midrule
+PaySim & 10 fixed features & 1.00 [1.00, 1.00] & 0.00 & Fails: $s=N$, as the counting argument predicts \\
+PaySim & entity $\times$ time window & 0.63 [0.40, 0.91] & 0.75 & Inconclusive slope; fails cold start \\
+IBM AMLworld & account $\times$ day & 1.09 [0.98, 1.30] & 0.68 & Fails both: hub accounts, cold start \\
+Elliptic Bitcoin & transaction graph & not fitted & 1.00 & Fails: no edges cross time steps \\
+\midrule
+Synthetic control & bounded, $s\le16$ & 0 & 0 & Passes; $\log_{10}$ F61 = 23.4--25.7 \\
+Synthetic best case & bounded, large margin & 0 & 0 & Passes; $\log_{10}$ F61 = 15.9--18.1 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\end{sectionblock}
+
+\begin{sectionblock}
+
+\begin{itemize}
+    \item \textbf{Cold start is the binding problem.} On AMLworld, 61--78\% of test records share no feature with training, even within the same day. In Elliptic, none of the 234{,}355 edges link different time steps, so every later transaction is unconnected to training.
+    \item \textbf{What keeps columns dense differs by dataset.} In AMLworld, a few hub accounts: the busiest (account, day) column grows from 430 to 3{,}216 while typical columns stay nearly flat. In PaySim, a coarse time-and-amount cell that tracks hourly volume; its entity features stay small (at most 78 per column).
+    \item \textbf{Even the ideal case is expensive.} The synthetic best case (bounded sparsity, perfectly separable, deliberately optimistic) still needs about $10^{16}$ passes over the data; the corrected estimates for real data (Finding 3) sit 12--21 orders of magnitude higher.
+    \item \textbf{A second limit on margins} \evlabel{calculated}. With bounded test sparsity, $\gamma_{10\%} \lesssim \sqrt{s'_{\mathrm{row}}\,s'_{\mathrm{col}}/m}$ for $m$ test records served: margins must shrink as more predictions are made, which feeds the $\gamma^{-4}$ cost.
+    \item \textbf{Caveats.} The slices cover minutes to hours of activity, so whether column sparsity levels off over a full day or longer was not tested (hence PaySim's inconclusive slope). AMLworld is synthetic. Licences of the public mirrors used were not verified.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Scope: What Was and Was Not Tested}
+\label{sec:scope}
+
+\begin{itemize}
+    \item \textbf{Tested:} three public datasets (one analytically); the theorem's conditions with the paper's own formulas; QOS building blocks in simulation at small sizes; a QROM cost comparison; tuned classical streaming baselines on three CFPB tasks with held-out test confirmation; a pre-registered screen of three more public financial datasets with synthetic controls.
+    \item \textbf{Not tested:} internal RBC data; longer time windows in the screen (it covered minutes to hours of activity); end-to-end scaling in $\kappa$, $\gamma$, $\delta$; the reusable shadow readout and full solver (calibrated only at $N=4$); building blocks beyond $N=128$, $s=32$ or with non-uniform sparsity; QOS's dimension-reduction and drifting-data theorems; classical streaming on Bank or PaySim.
+    \item \textbf{Not shown:} that Theorem F.13 is wrong (all results are consistent with it), or that no financial data could ever fit. The counting argument shows what fitting would require: features that recur across records while each stays rare.
+    \item The end-to-end simulation was paused because it needed 2--4 weeks of engineering and could not change the result on these datasets. It becomes worthwhile only if a dataset passes the sparsity and cold-start checks; none did in the screen (\hyperref[sec:f6]{Finding 6}). Decision record: \texttt{docs/decisions/phase\_b\_cancelled.md}.
+\end{itemize}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Candidate Bank Data and Problems}
+\label{sec:data}
+
+QOS can only help where the data (i) has bounded sparsity in rows \emph{and} columns, and (ii) cannot practically be stored or revisited. The table lists bank data worth checking against those conditions. Three rows have now been tested on public analogues (\hyperref[sec:f6]{Finding 6}); the rest can be screened in days with the existing tools, given data access.
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.19\textwidth}YYY@{}}
+\toprule
+\textbf{Bank data} & \textbf{Problem it could address} & \textbf{Why it might fit} & \textbf{Check first} \\
+\midrule
+Real-time payment and card-authorization streams & Fraud and anomaly scoring on high-volume streams & Very high volume, not retained at full detail; behaviour drifts (the paper's drifting-data theorem targets this) & \textbf{Tested on PaySim and AMLworld: fails.} Hub accounts; 68--75\% cold start \\
+Account--counterparty and interbank payment networks & Network risk, liquidity propagation (sparse linear systems, the paper's Theorem 1) & Each account has few counterparties, so rows are sparse & \textbf{Tested on Elliptic: fails.} No edges link time steps, so new data is fully cold-start \\
+High-cardinality categorical crosses (merchant $\times$ location $\times$ device) & Fraud and credit models on feature crosses & Each record activates a small fixed number of features & Common categories dominate columns; hashing already solves memory classically \\
+Market-data and order-book tick streams & Streaming dimension reduction of risk factors & Extreme rates, not stored at tick level & Numeric features are dense ($s=N$, as in Bank) \\
+Complaint, call and chat text (tested: CFPB) & Routing and topic monitoring & Sparse rows & Fails: common words make columns dense \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+A useful sign of a good candidate: teams currently \emph{discard, subsample or truncate} the data because of memory, not convenience. That matches the project's guiding question: problems that are abandoned or approximated classically.
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Alternative Methods Worth Testing}
+\label{sec:alt}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth}YYY@{}}
+\toprule
+\textbf{Method} & \textbf{What it is} & \textbf{Why consider it for RBC} & \textbf{Main risk} \\
+\midrule
+Fault-tolerant data-loading estimates (QROM / QRAM) & Gate and qubit cost of loading stored bank data \cite{motlagh2026dense,alonso2025} & Realistic route for stored data; rapidly improving; natural Xanadu collaboration; no hardware needed & Loading alone is not an advantage; needs a downstream algorithm that pays off \\
+Structured state preparation & Loading smooth distributions cheaply (e.g.\ Grover--Rudolph \cite{grover2002}, learned loaders \cite{zoufal2019}) & Feeds risk-estimation pipelines without loading raw data & Depends on smoothness; QAE-style risk was deprioritized \\
+Quantum kernels and feature maps & Encode inputs into quantum states for similarity-based learning \cite{havlicek2019} & Small data, so no large loading cost; open research question & No established advantage; kernel concentration \cite{thanasilp2024} \\
+QOS dimension-reduction and drifting-data variants & Other theorems in the same paper \cite{zhao2026} & Drift is common in bank data; cheap to audit with the existing tool & Likely the same sparsity requirement \\
+Quantum-inspired classical algorithms & Sampling-based classical analogues of quantum ML \cite{tang2019} & Run on classical hardware today; the right baseline for any QML claim & May not beat standard sketching \\
+Classical streaming sketches (tested) & Hashing, sparse projection, AWM-Sketch & Measured to work at 16--32\,KiB; deployable now on high-volume streams & Not quantum \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Next Steps}
+\label{sec:next}
+
+The positive control and a public-data screen are done (\hyperref[sec:f6]{Finding 6}). Rough effort estimates for what remains:
+
+\begin{enumerate}
+    \item \textbf{Audit the other QOS theorems (a few days).} Apply the existing tool to the dimension-reduction and drifting-data results.
+    \item \textbf{Screen one internal bank dataset over longer windows (1--2 weeks, incl.\ access).} Pre-register the test as in Finding 6, and check specifically whether column sparsity levels off over full days or weeks and whether features recur (cold-start rate). Discussions with Risk and data owners about data that is discarded or truncated for memory reasons would guide the choice.
+    \item \textbf{Resume end-to-end simulation only if step 2 passes (2--4 weeks).} Measure the untested $\kappa$, $\gamma$, $\delta$ scaling on that data.
+    \item \textbf{Fault-tolerant data-loading estimates (2--4 weeks).} Extend the QROM comparison into a resource estimate for a bank workload, a natural fit for a Xanadu conversation.
+    \item \textbf{Package the audit as a reusable tool (about 1 week)} for evaluating future quantum-ML claims against bank data.
+    \item \textbf{Housekeeping.} Report the \texttt{pyqsp} issue upstream (with approval); optionally extend classical streaming runs to Bank and PaySim.
+\end{enumerate}
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Anticipated Questions}
+\label{sec:faq}
+
+\textbf{The paper is by Caltech and Google researchers. Is it wrong?}
+No. It is a correct worst-case guarantee under stated conditions; these datasets don't meet them, and the cost stays prohibitive after correcting for the proof's looseness.
+
+\textbf{Was anything run on a quantum computer?}
+No. Building blocks were simulated classically, the standard way to test algorithmic scaling; current hardware cannot run QOS at meaningful sizes.
+
+\textbf{Would a bigger quantum computer fix this?}
+No. The bottleneck is samples (about $10^{24}$ per query), not qubits.
+
+\textbf{What about ``50 qubits vs millions of classical bits''?}
+The 50 qubits describe one prediction and omit the dominant costs. Classical learners need 16--32\,KiB here.
+
+\textbf{Did you just pick datasets that would fail?}
+No. The screen chose datasets \emph{because} they might fit, fixed its thresholds before reading data, and reports every case; synthetic controls show it passes a favourable case.
+
+\textbf{So is QOS a dead end for RBC?}
+For the data types tested, it is impractical. The counting argument (\hyperref[sec:f6]{Finding 6}) suggests why this is common: keeping columns sparse needs features that rarely repeat. Not ruled out: internal data where features genuinely recur over long windows; \hyperref[sec:next]{Next Steps} describes how to check.
+
+\end{sectionblock}
+
+% ============================================================
+\begin{sectionblock}
+
+\section{Reproducibility}
+\label{sec:repro}
+
+Repository: \url{https://rbc.github.fg.rbc.com/rbc-to/ziv0-qos-rbc-experiments} \cite{repo}, Index of all results: \texttt{results/FINAL\_SUMMARY.md}. Pinned environments (\texttt{requirements.txt}; \texttt{experiments/qos\_tightness/requirements-lock.txt}), append-only ledger (\texttt{results/experiment\_log.csv}), hashed run manifests and regression tests. Walkthrough for technical and non-technical audiences: \texttt{notebooks/08\_qos\_demo.ipynb}.
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lY@{}}
+\toprule
+\textbf{Finding} & \textbf{Main repository location} \\
+\midrule
+1. Applicability audit & \texttt{docs/audit\_step1\_summary.md}, \texttt{results/audit/} \\
+2. Tightness study & \texttt{experiments/qos\_tightness/}, \texttt{results/tightness/} \\
+3. Corrected cost & \texttt{docs/empirical\_f61.md}, \texttt{results/audit/empirical\_f61/} \\
+4. QROM vs QOS & \texttt{docs/qrom\_vs\_qos\_estimate.md}, \texttt{results/audit/qrom\_vs\_qos/} \\
+5. Classical streaming & \texttt{results/classical\_streaming/} \\
+6. Dataset screen & \texttt{results/screen/}, \texttt{experiments/sparsity\_screen/PROTOCOL.md}, \texttt{src/sparsity\_screen.py} \\
+Scope decision & \texttt{docs/decisions/phase\_b\_cancelled.md} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subhead{Glossary}
+\textbf{Oracle:} quantum access to all data at once. \textbf{Sketch:} a compact summary built from a stream. \textbf{Sparsity:} most nonzeros in any row or column. \textbf{Condition number:} how sensitive a linear problem is; larger is harder. \textbf{Margin:} how clearly a test point sits on one side of the decision boundary. \textbf{Pass:} one read through the training data. \textbf{Logical qubit:} an error-corrected qubit. \textbf{QROM:} standard loading of a stored table into a quantum computer. \textbf{Toffoli gate:} the costly gate dominating fault-tolerant circuits. \textbf{Featurizer:} turns raw text into numbers. \textbf{KiB:} 1{,}024 bytes; 16\,KiB holds about 2{,}000 numbers.
+
+\end{sectionblock}
+
+% ============================================================
+\clearpage
+
+\begin{thebibliography}{99}
+
+\bibitem{zhao2026}
+H. Zhao, A. Zlokapa, H. Neven, R. Babbush, J. Preskill,
+J. R. McClean, and H.-Y. Huang,
+``Exponential quantum advantage in processing massive classical data,''
+arXiv preprint arXiv:2604.07639v2, 2026.
+Available: \href{https://arxiv.org/abs/2604.07639}{arXiv:2604.07639}.
+
+\bibitem{repo}
+M. Thakkar,
+``qos-rbc-experiments: Evaluating Quantum Oracle Sketching on financial data,''
+GitHub repository available at: \href{https://rbc.github.fg.rbc.com/rbc-to/ziv0-qos-rbc-experiments}{rbc.github.fg.rbc.com/rbc-to/ziv0-qos-rbc-experiments}.
+
+\bibitem{qosref}
+H. Zhao \textit{et al.},
+``quantum-oracle-sketching,'' reference implementation, GitHub repository, commit \texttt{a3fe8d6}.
+Available: \href{https://github.com/haimengzhao/quantum-oracle-sketching}{github.com/haimengzhao/quantum-oracle-sketching}.
+
+\bibitem{aaronson2015}
+S. Aaronson,
+``Read the fine print,''
+\textit{Nature Physics}, vol. 11, pp. 291--293, 2015.
+doi: \href{https://doi.org/10.1038/nphys3272}{10.1038/nphys3272}.
+
+\bibitem{gilyen2019qsvt}
+A. Gily\'en, Y. Su, G. H. Low, and N. Wiebe,
+``Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics,''
+in \textit{Proceedings of the 51st ACM Symposium on Theory of Computing}, pp. 193--204, 2019.
+arXiv: \href{https://arxiv.org/abs/1806.01838}{1806.01838}.
+
+\bibitem{martyn2021}
+J. M. Martyn, Z. M. Rossi, A. K. Tan, and I. L. Chuang,
+``Grand unification of quantum algorithms,''
+\textit{PRX Quantum}, vol. 2, 040203, 2021.
+doi: \href{https://doi.org/10.1103/PRXQuantum.2.040203}{10.1103/PRXQuantum.2.040203}.
+Software: \texttt{pyqsp}.
+
+\bibitem{huang2020}
+H.-Y. Huang, R. Kueng, and J. Preskill,
+``Predicting many properties of a quantum system from very few measurements,''
+\textit{Nature Physics}, vol. 16, pp. 1050--1057, 2020.
+doi: \href{https://doi.org/10.1038/s41567-020-0932-7}{10.1038/s41567-020-0932-7}.
+
+\bibitem{motlagh2026dense}
+D. Motlagh,
+``Halving the cost of QROM again via dense encoding,''
+arXiv preprint arXiv:2610.02321, 2026.
+
+\bibitem{motlagh2026halving}
+D. Motlagh and M. Pocrnic,
+``Halving the cost of QROM,''
+arXiv preprint arXiv:2605.20334, 2026.
+
+\bibitem{berry2019}
+D. W. Berry, C. Gidney, M. Motta, J. R. McClean, and R. Babbush,
+``Qubitization of arbitrary basis quantum chemistry leveraging sparsity and low rank factorization,''
+\textit{Quantum}, vol. 3, p. 208, 2019.
+arXiv: \href{https://arxiv.org/abs/1902.02134}{1902.02134}.
+
+\bibitem{low2024}
+G. H. Low, V. Kliuchnikov, and L. Schaeffer,
+``Trading T gates for dirty qubits in state preparation and unitary synthesis,''
+\textit{Quantum}, vol. 8, p. 1375, 2024.
+arXiv: \href{https://arxiv.org/abs/1812.00954}{1812.00954}.
+
+\bibitem{alonso2025}
+G. Alonso-Linaje, U. Azad, J. Soni, J. Smalley, L. Lapworth, and J. M. Arrazola,
+``Quantum compilation framework for data loading,''
+arXiv preprint arXiv:2512.05183, 2025.
+
+\bibitem{grover2002}
+L. Grover and T. Rudolph,
+``Creating superpositions that correspond to efficiently integrable probability distributions,''
+arXiv preprint quant-ph/0208112, 2002.
+
+\bibitem{zoufal2019}
+C. Zoufal, A. Lucchi, and S. Woerner,
+``Quantum Generative Adversarial Networks for learning and loading random distributions,''
+\textit{npj Quantum Information}, vol. 5, 103, 2019.
+arXiv: \href{https://arxiv.org/abs/1904.00043}{1904.00043}.
+
+\bibitem{havlicek2019}
+V. Havl\'i\v{c}ek, A. D. C\'orcoles, K. Temme, A. W. Harrow,
+A. Kandala, J. M. Chow, and J. M. Gambetta,
+``Supervised learning with quantum-enhanced feature spaces,''
+\textit{Nature}, vol. 567, pp. 209--212, 2019.
+doi: \href{https://doi.org/10.1038/s41586-019-0980-2}{10.1038/s41586-019-0980-2}.
+
+\bibitem{thanasilp2024}
+S. Thanasilp, S. Wang, M. Cerezo, and Z. Holmes,
+``Exponential concentration in quantum kernel methods,''
+\textit{Nature Communications}, vol. 15, 5200, 2024.
+doi: \href{https://doi.org/10.1038/s41467-024-49287-w}{10.1038/s41467-024-49287-w}.
+
+\bibitem{tang2019}
+E. Tang,
+``A quantum-inspired classical algorithm for recommendation systems,''
+in \textit{Proceedings of the 51st ACM Symposium on Theory of Computing}, pp. 217--228, 2019.
+arXiv: \href{https://arxiv.org/abs/1807.04271}{1807.04271}.
+
+\bibitem{weinberger2009}
+K. Weinberger, A. Dasgupta, J. Langford, A. Smola, and J. Attenberg,
+``Feature hashing for large scale multitask learning,''
+in \textit{Proceedings of the 26th International Conference on Machine Learning}, 2009.
+arXiv: \href{https://arxiv.org/abs/0902.2206}{0902.2206}.
+
+\bibitem{kane2014}
+D. M. Kane and J. Nelson,
+``Sparser Johnson--Lindenstrauss transforms,''
+\textit{Journal of the ACM}, vol. 61, no. 1, 2014.
+arXiv: \href{https://arxiv.org/abs/1012.1577}{1012.1577}.
+
+\bibitem{tai2018}
+K. S. Tai, V. Sharan, P. Bailis, and G. Valiant,
+``Sketching linear classifiers over data streams,''
+in \textit{Proceedings of the 2018 International Conference on Management of Data (SIGMOD)}, 2018.
+arXiv: \href{https://arxiv.org/abs/1711.02305}{1711.02305}.
+
+\bibitem{cfpb}
+Consumer Financial Protection Bureau,
+``Consumer Complaint Database,'' export of complaints received January--February 2026.
+Available: \href{https://www.consumerfinance.gov/data-research/consumer-complaints/}{consumerfinance.gov/data-research/consumer-complaints}.
+
+\bibitem{moro2014}
+S. Moro, P. Cortez, and P. Rita,
+``A data-driven approach to predict the success of bank telemarketing,''
+\textit{Decision Support Systems}, vol. 62, pp. 22--31, 2014.
+doi: \href{https://doi.org/10.1016/j.dss.2014.03.001}{10.1016/j.dss.2014.03.001}.
+
+\bibitem{altman2023}
+E. Altman, J. Blanu\v{s}a, L. von Niederh\"ausern, B. Egressy, A. Anghel, and K. Atasu,
+``Realistic Synthetic Financial Transactions for Anti-Money Laundering Models,''
+in \textit{Advances in Neural Information Processing Systems (Datasets and Benchmarks Track)}, 2023.
+arXiv: \href{https://arxiv.org/abs/2306.16424}{2306.16424}.
+
+\bibitem{weber2019}
+M. Weber, G. Domeniconi, J. Chen, D. K. I. Weidele, C. Bellei, T. Robinson, and C. E. Leiserson,
+``Anti-Money Laundering in Bitcoin: Experimenting with Graph Convolutional Networks for Financial Forensics,''
+\textit{KDD Workshop on Anomaly Detection in Finance}, 2019.
+arXiv: \href{https://arxiv.org/abs/1908.02591}{1908.02591}.
+
+\bibitem{paysim}
+E. A. Lopez-Rojas, A. Elmir, and S. Axelsson,
+``PaySim: A financial mobile money simulator for fraud detection,''
+in \textit{Proceedings of the 28th European Modeling and Simulation Symposium (EMSS)}, 2016.
+
+\end{thebibliography}
+
+\end{document}
