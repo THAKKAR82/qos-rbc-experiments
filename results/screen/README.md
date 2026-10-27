@@ -55,3 +55,18 @@ Per-family attribution comes from [family_breakdown_20261026T143716Z/](family_br
   - The Elliptic licence text was not verifiable.
   - The PaySim licence is unverified, as before.
 - **What was not run.** k\* and the audit on real data (no case passed sparsity), capped encodings (they pass by construction), SEC XBRL (dropped by the user), and naive fixed-D encodings other than PaySim's.
+
+## Known limitations
+
+These were found in the whole-branch review and left as they are. None of them changes a verdict in this screen.
+
+- **"Synthetic best case" wording.** `ctrl_bounded_margin` is one construction, not an optimum. The calculated margin ceiling gives a floor for any s = 16 data: γ ≤ √(256/m) ≈ 0.146 at m ≈ 12k, so log10 F61 ≳ 15.
+- **The verdict CI is anti-conservative.** It is a percentile cluster bootstrap over 5 replicates (only 126 distinct resamples), which under-covers. The t-interval treats 20 nested points as independent. No verdict here is borderline under either interval. `n_boot_used` is not recorded in `slopes.csv`.
+- **`fit_loglog_slope` has two edge-case failures.** With 2 points it raises (zero degrees of freedom). With constant N and varying s it returns a NaN slope, which is classified INCONCLUSIVE. Neither can occur on the current grid.
+- **Duplicate truncated points.** If several grid N truncate to the same training size, the identical points enter the fit more than once.
+- **The audit uses replicate 0 only.** On AMLworld, replicate 0 has no positives in validation or test at N = 80k, so it would be "audit not run: single class" even if it had passed sparsity. A single-class *test* split is not guarded.
+- **Run ID and directory name differ.** The screen directory `screen_20261026T142018Z` was stamped before the data loaded; its run_id (used in the ledger) is `20261026T142043Z-5d40d734`.
+- **Summary labelling.**
+  - The summary takes the maximum over replicates for s and D but the mean for the N/D bound.
+  - `full_model_bytes` (8 × D_train, the float64 weights of an exact model) is not labelled.
+  - Elliptic's cold start is called "measured" here, but "calculated from the edge list" in the protocol. Both hold: the protocol states the structural argument, and the 34/15 rate was measured.
