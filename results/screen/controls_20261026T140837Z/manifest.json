@@ -1,0 +1,83 @@
+{
+  "artifacts_sha256": {
+    "audit/bounded.json": "a88621ea7fc4847b7523da9830b4b22d5222a1c440a883e0d313a03ecd33b6ff",
+    "audit/bounded_margin.json": "074b87710bf416299782db36b6cd0b54c6426629bc4593d30ea4fe9389f709c8",
+    "audit/dense_col.json": "5bd836fe19e028d200d574db07258ff8e224dc63140e1f1781f5d7e684a70835",
+    "controls_summary.csv": "95b261bc035cbcd76206a84437b40491192c61c2f3ed9e31e09deea3b726e3ac",
+    "ledger_rows.csv": "f554a995edab21a7e5a2a010fcfd41dccc10491c2c84a21e846c630603fa2b30",
+    "scaling.csv": "1af9b22f00d7f8b8d3e3be0e35ddb4cac4d8d7f24f99564b166eb058414e2dd7",
+    "slopes.csv": "479c3ac37c44820c32594a177f6707066904d3323d51e8d58906efa0aa72be3f"
+  },
+  "cases": {
+    "ctrl_bounded": {
+      "kind": "bounded",
+      "label": "synthetic control"
+    },
+    "ctrl_bounded_margin": {
+      "kind": "bounded_margin",
+      "label": "synthetic best case"
+    },
+    "ctrl_dense_col": {
+      "kind": "dense_col",
+      "label": "synthetic control"
+    }
+  },
+  "code_sha256": {
+    "experiments/sparsity_screen/controls.py": "d09b8e867230ca3efac8978931bf189ae6a2694b89c769dae2687726878eb6bc",
+    "src/machine_size.py": "60785c741d3ae995bae25c1f4b14be7286f7ac305555878a8c9dc73a0d5838d1",
+    "src/qos_audit.py": "01bc5fc897c90a3babdf3bf09f52b03516dbe757610616e3fc28b43fc9baee48",
+    "src/sparsity_screen.py": "655df9164c0af07417104ba9f417090f03ab8618f1399f567288f7bbb73b5808"
+  },
+  "config": {
+    "alphas": [
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "audit_n": 80000,
+    "audit_replicate": 0,
+    "delta": 0.1,
+    "empirical_alpha_s": [
+      3.147,
+      3.273
+    ],
+    "grid": [
+      10000,
+      20000,
+      40000,
+      80000
+    ],
+    "n_boot": 2000,
+    "replicates": 5,
+    "seed": 42,
+    "thresholds": {
+      "fail_above": 0.5,
+      "pass_below": 0.2
+    }
+  },
+  "date_utc": "2026-10-26T14:08:37.931573+00:00",
+  "git_commit": "850b53f4b9edfa486727e3ac3f910644f3bcc5b4",
+  "interpretation": {
+    "audit": "calculated / theoretical accounting on synthetic data",
+    "bound": "calculated inequality (Schur bound on the test matrix)",
+    "empirical": "extrapolation from small-size simulation; orders of magnitude only; synthetic data",
+    "sparsity": "measured on synthetic data (screener control)"
+  },
+  "ledger": {
+    "original_length": 3288363,
+    "original_sha256": "d0dae51b03a930ffa55fff04caaea1c507400cea61426526e0abb8717fdd50d3",
+    "path": "results/experiment_log.csv"
+  },
+  "packages": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1"
+  },
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "protocol_sha256": "86f4345ff551af3d4311cd12b3d492e3350d3e955448416559838a4da90eddc0",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "run_id": "20261026T140837Z-5690479d",
+  "status": "completed"
+}

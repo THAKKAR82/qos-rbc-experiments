@@ -1,0 +1,21 @@
+{
+  "artifacts_sha256": {
+    "families.csv": "0c4e99ba8a2a62959807f4277f37b04b00f67e7656c5c16724541c9847e57aad",
+    "spans.csv": "2268dea031e5ac22fa6a8add1bf11f16c3c3416c0ff64f60d70708f4198947c2"
+  },
+  "code_sha256": {
+    "experiments/sparsity_screen/family_breakdown.py": "dcb3cedaee01e0fc1785ed0a21845c1799ffbb2a78c5aca498ac53002794e8b3",
+    "src/screen_datasets.py": "f65ff5bb0b25804c4c1aed0994c4f675c745f916d58b36585fe33f051a5f00e7",
+    "src/sparsity_screen.py": "655df9164c0af07417104ba9f417090f03ab8618f1399f567288f7bbb73b5808"
+  },
+  "date_utc": "2026-10-26T14:37:40.773328+00:00",
+  "git_commit": "c7b61ac607da0f009c519779628d680c9e3afb0f",
+  "interpretation": "measured derived diagnostic; reproduces scaling.csv exactly; changes no verdict",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "source_run": "results/screen/screen_20261026T142018Z",
+  "source_scaling_sha256": "e87d1531ab42f73e49492b9d7fe8edd317114515027047c820f776306c36045e",
+  "time_units": {
+    "aml_acct_window": "minute",
+    "paysim_time_local": "step (hour)"
+  }
+}

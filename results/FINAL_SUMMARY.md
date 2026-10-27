@@ -161,3 +161,30 @@ This asks how much state a streaming classical learner needs to match frozen ful
 - **Beyond the scoped classical grid.** Classical results cover 3 CFPB tasks, with validation selection and one frozen test confirmation. There are no random-order or MISSION cells, and no Bank or PaySim streaming runs.
 
 Details are in [docs/decisions/phase_b_cancelled.md](../docs/decisions/phase_b_cancelled.md).
+
+## Addendum, 2026-10-26: public-data sparsity screen
+
+**Labels: calculated (bound); measured (screen); synthetic (controls).** Sources: [results/screen/README.md](screen/README.md) and [experiments/sparsity_screen/PROTOCOL.md](../experiments/sparsity_screen/PROTOCOL.md). Everything above this section is unchanged from the `v1-qos-findings` tag.
+
+**Fixed-D encodings fail by construction (calculated).** For N nonzero rows with mean row nonzero count r̄, the column counts sum to r̄N, so max column nnz ≥ r̄N/D ≥ N/D. With a fixed feature set, s grows at least linearly in N. Bounded s needs the feature count to grow with N (D ≥ r̄N/s₀). The bound is necessary, not sufficient. It gives s_col ≥ 31 on the CFPB one-vs-rest matrix, where the measured value is 8,776, and s_col ≥ 11,347 per Bank fold, where the measured value is 36,168.
+
+**The screen found no passing public case (measured).** Thresholds and the cold-start gate (≤ 0.10) were pre-registered.
+
+| Case | Slope of s vs N [95% CI] | Cold start at N = 80k | Outcome |
+|---|---|--:|---|
+| PaySim, fixed D = 10 | 1.00 [1.00, 1.00] | 0.00 | FAIL (sparsity) |
+| PaySim, entity × 24-step window | 0.63 [0.40, 0.91] | 0.75 | INCONCLUSIVE; FAIL (cold start) |
+| IBM AMLworld HI-Small, account × day | 1.09 [0.98, 1.30] | 0.68 | FAIL (both) |
+| Elliptic, graph only | not measured | 1.00 (0 of 234,355 edges cross time steps) | FAIL (cold start) |
+
+- **What sets s differs by dataset.** On AMLworld it is hub source accounts: the largest (account, day) column grows from 430 to 3,216 as N goes from 10k to 80k, while the typical column (p99) is nearly bounded. On PaySim it is a coarse (type × amount decile × hour) cell that tracks hourly volume. PaySim's entity families stay small (≤ 78).
+- **Cold start is the binding problem.** AMLworld account × day features rarely recur even within the same day (61–78% of test rows unserved). PaySim's rate depends on whether the test shares an hour with training. Source: `results/screen/family_breakdown_20261026T143716Z/`.
+- **The grid barely reaches the time windows.** Prefixes at N ≤ 80k span minutes to hours, so whether s levels off at a per-window maximum is untested.
+- **k\* and the real-data audit were not run.** No case passed both gates.
+
+**Synthetic reference points (not evidence about real data).**
+- The positive control (s ≤ 16) passes the screen with κ_reg 3.45, γ_p10 0.0011 and log10 F61 25.7 (proof) or 23.4–23.6 (empirical).
+- A best case with s ≤ 16 and a planted margin reaches validation accuracy 1.0, κ_reg 1.69 and γ_p10 0.042, which still gives log10 F61 18.1 (proof) or 15.9–16.0 (empirical).
+- A calculated ceiling, γ_p10 ≤ √(s′_row s′_col / m), shows that with column-bounded test data the served margin shrinks like 1/√m.
+
+This extends the conclusion above from the representations studied to every fixed-D encoding. It still does not disprove Theorem F.13 or rule out other data.

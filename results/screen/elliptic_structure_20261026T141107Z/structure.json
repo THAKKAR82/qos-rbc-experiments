@@ -1,0 +1,33 @@
+{
+  "code_sha256": "cd75c251b3687866f6ce4d95d0cd289cd5178f35084008530e2a52f5f00eae47",
+  "cold_start_gate": 0.1,
+  "cold_start_step_aligned": {
+    "encoding": "rows = labeled txs; columns = out:/in: neighbour ids",
+    "last_train_step": 34,
+    "rate": 1.0
+  },
+  "cross_step_edges": 0,
+  "date_utc": "2026-10-26T14:11:07.958588+00:00",
+  "files_sha256": {
+    "elliptic_txs_classes.csv.zip": "4ca957f0ceffd5dd164e255c7d5ad9ee69a6fa64ae1dd94d6f113e5ebf3b07ba",
+    "elliptic_txs_edgelist.csv.zip": "a2f9f6b67a39da2d8cf87fe77b9db89571ba6d880e5dd5b5991dc45c80fa34ec",
+    "elliptic_txs_features.csv.zip": "d33d62159e64b5e889f1a7ea880227c612775b58d409598855e0c4400fa52b3e"
+  },
+  "git_commit": "93d485e9cfc7310cfd4c95dd953b1a9727ca55be",
+  "interpretation": "measured structural property of the public Elliptic edge list (graph-only encoding)",
+  "labeled": {
+    "illicit": 4545,
+    "licit": 42019,
+    "unknown": 157205
+  },
+  "licence": "not verified: the Kaggle page (ellipticco/elliptic-data-set) shows no licence text without JavaScript",
+  "n_edges": 234355,
+  "n_nodes": 203769,
+  "n_steps": 49,
+  "protocol_sha256": "86f4345ff551af3d4311cd12b3d492e3350d3e955448416559838a4da90eddc0",
+  "reason": "no cross-step edges: every test row is cold-start (gamma = 0) under a step-aligned chronological split",
+  "run_id": "20261026T141107Z-2ca681e4",
+  "source": "https://data.pyg.org/datasets/elliptic/<file>.zip (PyTorch Geometric EllipticBitcoinDataset host)",
+  "verdict": "FAIL",
+  "within_step_edges": 234355
+}
